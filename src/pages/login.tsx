@@ -1,9 +1,11 @@
 import { useMutation, gql } from "@apollo/client";
 import React from "react";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { Button } from "../components/button";
 import { FormError } from "../components/form-error";
+import { LoginInput } from "../__generated__/globalTypes";
 import {
   LoginMutation,
   LoginMutationVariables,
@@ -19,18 +21,13 @@ const LOGIN_MUTATION = gql`
   }
 `;
 
-interface ILoginForm {
-  email: string;
-  password: string;
-}
-
 export const Login = () => {
   const {
     register,
     handleSubmit,
     getValues,
     formState: { isValid, errors },
-  } = useForm<ILoginForm>({
+  } = useForm<LoginInput>({
     mode: "onChange",
   });
   const onCompleted = (data: LoginMutation) => {
@@ -60,6 +57,11 @@ export const Login = () => {
 
   return (
     <div className="h-screen flex items-center flex-col justify-center">
+      <HelmetProvider>
+        <Helmet>
+          <title>Login | Places</title>
+        </Helmet>
+      </HelmetProvider>
       <div className="w-full max-w-screen-sm">
         <h4 className="w-full font-medium text-center text-3xl mb-5 lg:mb-10">
           Welcome back
@@ -74,6 +76,7 @@ export const Login = () => {
               required: "Email is required",
               pattern: {
                 value:
+                  //eslint-disable-next-line
                   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                 message: "Please enter your email. (example@places.com)",
               },

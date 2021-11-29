@@ -7,6 +7,13 @@
 // START Enums and Input Objects
 //==============================================================
 
+export interface CreateAccountInput {
+  email: string;
+  password: string;
+  nickname: string;
+  avatarUrl?: string | null;
+}
+
 export interface LoginInput {
   email: string;
   password: string;
