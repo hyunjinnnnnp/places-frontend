@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { gql, useMutation } from "@apollo/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -9,6 +9,7 @@ import {
   createAccountMutationVariables,
 } from "../__generated__/createAccountMutation";
 import { useNavigate } from "react-router-dom";
+import { LinkTo } from "../components/link";
 
 const CREATE_ACCOUNT_MUTATION = gql`
   mutation createAccountMutation($createAccountInput: CreateAccountInput!) {
@@ -21,8 +22,10 @@ const CREATE_ACCOUNT_MUTATION = gql`
 
 export const CreateAccount = () => {
   const navigate = useNavigate();
-  const onCompleted = (data: any) => {
-    const { ok, error } = data;
+  const onCompleted = (data: createAccountMutation) => {
+    const {
+      createAccount: { ok, error },
+    } = data;
     if (ok) {
       alert("Account Created! Log in now!");
       navigate("/");
@@ -39,18 +42,23 @@ export const CreateAccount = () => {
   } = useForm({
     mode: "onChange",
   });
-  const password = useRef();
   const [preview, setPreview] = useState("");
-  password.current = watch("password");
-  const watchFile = watch("file");
-  if (watchFile) {
-    const reader = new FileReader();
-    const actualFile = watchFile[0];
-    reader.readAsDataURL(actualFile);
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-  }
+  const [currentPassword, setcurrentPassword] = useState("");
+  watch(["file", "password"]);
+  useEffect(() => {
+    watch(({ file, password }) => {
+      setcurrentPassword(password);
+      if (file.length > 0) {
+        const reader = new FileReader();
+        const actualFile = file[0];
+        reader.readAsDataURL(actualFile);
+        reader.onloadend = () => {
+          setPreview(reader.result as string);
+        };
+      }
+    });
+  }, [watch]);
+
   const [createAccount, { data: createAccountMutationResult, loading }] =
     useMutation<createAccountMutation, createAccountMutationVariables>(
       CREATE_ACCOUNT_MUTATION,
@@ -60,26 +68,32 @@ export const CreateAccount = () => {
     );
   const onSubmit = async () => {
     try {
-      const { nickname, email, password, file } = getValues();
-      const actualFile = file[0];
-      const formBody = new FormData();
-      formBody.append("file", actualFile);
-      const { url: avatarUrl } = await (
-        await fetch("http://localhost:4000/uploads/", {
-          method: "POST",
-          body: formBody,
-        })
-      ).json();
-      createAccount({
-        variables: {
-          createAccountInput: {
-            nickname,
-            email,
-            password,
-            avatarUrl,
+      if (!loading) {
+        const { nickname, email, password, file } = getValues();
+        let avatarUrl = "";
+        if (file.length > 0) {
+          const actualFile = file[0];
+          const formBody = new FormData();
+          formBody.append("file", actualFile);
+          const { url } = await (
+            await fetch("http://localhost:4000/uploads/", {
+              method: "POST",
+              body: formBody,
+            })
+          ).json();
+          avatarUrl = url;
+        }
+        createAccount({
+          variables: {
+            createAccountInput: {
+              nickname,
+              email,
+              password,
+              avatarUrl,
+            },
           },
-        },
-      });
+        });
+      }
     } catch (e) {
       //TO DO : error handling
     }
@@ -113,7 +127,7 @@ export const CreateAccount = () => {
               required: "Nickname is required",
             })}
             placeholder="Nickname"
-            name="name"
+            name="nickname"
             type="text"
           />
           {errors.nickname?.message}
@@ -155,7 +169,7 @@ export const CreateAccount = () => {
             className="input"
             {...register("checkPassword", {
               required: "Password confirm field is required.",
-              validate: (value) => value === password.current,
+              validate: (value) => value === currentPassword,
             })}
             placeholder="Check Password"
             name="checkPassword"
@@ -174,6 +188,10 @@ export const CreateAccount = () => {
             />
           )}
         </form>
+        <div>
+          Already have an ccount?
+          <LinkTo path={"/"} text={"Log in now"} />
+        </div>
       </div>
     </div>
   );

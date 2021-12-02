@@ -2,10 +2,10 @@ import { useMutation, gql } from "@apollo/client";
 import React from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import { authTokenVar, isLoggedInVar } from "../apollo";
 import { Button } from "../components/button";
 import { FormError } from "../components/form-error";
+import { LinkTo } from "../components/link";
 import { LOCALSTORAGE_TOKEN } from "../constants";
 import { LoginInput } from "../__generated__/globalTypes";
 import {
@@ -115,12 +115,7 @@ export const Login = () => {
         </form>
         <div className="px-10 text-right">
           New to Places?
-          <Link
-            to="/create-account"
-            className="text-yellow-600 hover:underline ml-2"
-          >
-            Create an Account
-          </Link>
+          <LinkTo path="/create-account" text="Create an Account" />
         </div>
       </div>
     </div>

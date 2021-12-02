@@ -2,6 +2,8 @@ import React from "react";
 import { gql, useQuery } from "@apollo/client";
 import { isLoggedInVar } from "../apollo";
 import { myProfile } from "../__generated__/myProfile";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Header } from "../components/header";
 
 const MY_PROFILE_QUERY = gql`
   query myProfile {
@@ -22,7 +24,6 @@ const MY_PROFILE_QUERY = gql`
 
 export const LoggedInRouter = () => {
   const { data, loading, error } = useQuery<myProfile>(MY_PROFILE_QUERY);
-  console.log(data, "from frontend");
   if (!data || loading || error) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -31,9 +32,11 @@ export const LoggedInRouter = () => {
     );
   }
   return (
-    <div>
-      <h1>{data.myProfile?.user?.nickname}</h1>
-      <button onClick={() => isLoggedInVar(false)}>Log Out</button>
-    </div>
+    <Router>
+      <Header />
+      <Routes>
+        {/* <button onClick={() => isLoggedInVar(false)}>Log Out</button> */}
+      </Routes>
+    </Router>
   );
 };
