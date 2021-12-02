@@ -9,8 +9,8 @@
 
 export interface CreateAccountInput {
   email: string;
-  password: string;
   nickname: string;
+  password: string;
   avatarUrl?: string | null;
 }
 

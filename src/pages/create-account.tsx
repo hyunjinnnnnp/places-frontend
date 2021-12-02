@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { gql, useMutation } from "@apollo/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -40,7 +40,17 @@ export const CreateAccount = () => {
     mode: "onChange",
   });
   const password = useRef();
+  const [preview, setPreview] = useState("");
   password.current = watch("password");
+  const watchFile = watch("file");
+  if (watchFile) {
+    const reader = new FileReader();
+    const actualFile = watchFile[0];
+    reader.readAsDataURL(actualFile);
+    reader.onloadend = () => {
+      setPreview(reader.result as string);
+    };
+  }
   const [createAccount, { data: createAccountMutationResult, loading }] =
     useMutation<createAccountMutation, createAccountMutationVariables>(
       CREATE_ACCOUNT_MUTATION,
@@ -84,12 +94,13 @@ export const CreateAccount = () => {
       </HelmetProvider>
       <div className="w-full max-w-screen-sm">
         <h4 className="w-full font-medium text-center text-3xl mb-5 lg:mb-10">
-          Log In
+          Let's get started!
         </h4>
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="grid gap-3 my-5 w-full px-10"
         >
+          {preview && <img src={preview} alt="img-preview" />}
           <input
             {...register("file")}
             accept="image/*"
