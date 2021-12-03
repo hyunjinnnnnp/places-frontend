@@ -57,7 +57,7 @@ export const ConfirmEmail = () => {
         },
       });
     }
-  }, [code]);
+  }, [code, verifyEmail]);
   return (
     <div className="mt-52 flex flex-col items-center justify-center">
       <h1 className="text-2xl font-bold">Confirming email...</h1>

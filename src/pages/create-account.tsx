@@ -68,7 +68,7 @@ export const CreateAccount = () => {
         reader.onloadend = () => {
           setPreview(reader.result as string);
         };
-        //fetch API
+        //fetch API >>> onSubmit으로 옮겨야함
         const formBody = new FormData();
         formBody.append("file", actualFile);
         fetchAPI(formBody);
@@ -87,7 +87,7 @@ export const CreateAccount = () => {
   const onSubmit = async () => {
     //아바타가 있던 없던 가입은 성공해야함
     try {
-      const { nickname, email, password, file } = getValues();
+      const { nickname, email, password } = getValues();
       //아바타가 있다면 업로드한다
 
       //없으면 그냥 쿼리 날린다

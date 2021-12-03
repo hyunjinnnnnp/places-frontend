@@ -6,6 +6,7 @@ import { NotFound } from "../pages/404";
 import { useMe } from "../hooks/useMe";
 import { MyProfile } from "../pages/my-profile";
 import { ConfirmEmail } from "../pages/confirm-email";
+import { EditProfile } from "../pages/edit-profile";
 
 export const LoggedInRouter = () => {
   const { data, loading, error } = useMe();
@@ -23,6 +24,7 @@ export const LoggedInRouter = () => {
         <Route path="" element={<Home />} />
         <Route path="my-profile" element={<MyProfile />} />
         <Route path="confirm/*" element={<ConfirmEmail />} />
+        <Route path="edit-profile" element={<EditProfile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import { Link } from "react-router-dom";
 import { authTokenVar, client, isLoggedInVar } from "../apollo";
 import { LOCALSTORAGE_TOKEN } from "../constants";
 import { useMe } from "../hooks/useMe";
 
 export const MyProfile = () => {
-  const { data, loading, error } = useMe();
+  const { data } = useMe();
   const navigate = useNavigate();
   const logout = async () => {
     localStorage.removeItem(LOCALSTORAGE_TOKEN);
@@ -57,6 +58,7 @@ export const MyProfile = () => {
       >
         Log Out
       </button>
+      <Link to="/edit-profile">Edit Profile</Link>
     </>
   );
 };

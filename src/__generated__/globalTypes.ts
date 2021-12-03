@@ -14,6 +14,12 @@ export interface CreateAccountInput {
   avatarUrl?: string | null;
 }
 
+export interface EditProfileInput {
+  email?: string | null;
+  nickname?: string | null;
+  avatarUrl?: string | null;
+}
+
 export interface LoginInput {
   email: string;
   password: string;
