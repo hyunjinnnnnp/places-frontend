@@ -6,6 +6,11 @@ export const Header: React.FC = () => {
   const { data } = useMe();
   return (
     <>
+      {data && !data?.myProfile.user?.verified && (
+        <div className="p-3 bg-red-500 text-white">
+          <span>Please verify your email</span>
+        </div>
+      )}
       <header className="bg-yellow-400 w-full h-14 flex items-center justify-between">
         <Link to="">
           <div className="font-bold text-lg">PLACES</div>

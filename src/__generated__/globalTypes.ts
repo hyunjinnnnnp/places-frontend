@@ -19,6 +19,10 @@ export interface LoginInput {
   password: string;
 }
 
+export interface VerifyEmailInput {
+  code: string;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

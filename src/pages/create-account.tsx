@@ -45,17 +45,33 @@ export const CreateAccount = () => {
   const [preview, setPreview] = useState("");
   const [currentPassword, setcurrentPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+
+  const fetchAPI = async (formBody: FormData) => {
+    const { url } = await (
+      await fetch("http://localhost:4000/uploads/", {
+        method: "POST",
+        body: formBody,
+      })
+    ).json();
+    setAvatarUrl(url);
+  };
+
   watch(["file", "password"]);
   useEffect(() => {
     watch(({ file, password }) => {
       setcurrentPassword(password);
       if (file.length > 0) {
+        //file이 있다면 프리뷰 이미지
         const reader = new FileReader();
         const actualFile = file[0];
         reader.readAsDataURL(actualFile);
         reader.onloadend = () => {
           setPreview(reader.result as string);
         };
+        //fetch API
+        const formBody = new FormData();
+        formBody.append("file", actualFile);
+        fetchAPI(formBody);
       }
     });
   }, [watch]);
@@ -67,28 +83,21 @@ export const CreateAccount = () => {
         onCompleted,
       }
     );
+
   const onSubmit = async () => {
-    const { nickname, email, password, file } = getValues();
+    //아바타가 있던 없던 가입은 성공해야함
     try {
-      if (file.length > 0) {
-        const actualFile = file[0];
-        const formBody = new FormData();
-        formBody.append("file", actualFile);
-        const { url: avatarUrl } = await (
-          await fetch("http://localhost:4000/uploads/", {
-            method: "POST",
-            body: formBody,
-          })
-        ).json();
-        setAvatarUrl(avatarUrl);
-      }
+      const { nickname, email, password, file } = getValues();
+      //아바타가 있다면 업로드한다
+
+      //없으면 그냥 쿼리 날린다
       createAccount({
         variables: {
           createAccountInput: {
             nickname,
             email,
             password,
-            avatarUrl,
+            ...(avatarUrl && { avatarUrl }),
           },
         },
       });

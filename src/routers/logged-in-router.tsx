@@ -5,6 +5,7 @@ import { Home } from "../pages/home";
 import { NotFound } from "../pages/404";
 import { useMe } from "../hooks/useMe";
 import { MyProfile } from "../pages/my-profile";
+import { ConfirmEmail } from "../pages/confirm-email";
 
 export const LoggedInRouter = () => {
   const { data, loading, error } = useMe();
@@ -20,7 +21,8 @@ export const LoggedInRouter = () => {
       <Header />
       <Routes>
         <Route path="" element={<Home />} />
-        <Route path="/my-profile" element={<MyProfile />} />
+        <Route path="my-profile" element={<MyProfile />} />
+        <Route path="confirm/*" element={<ConfirmEmail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
