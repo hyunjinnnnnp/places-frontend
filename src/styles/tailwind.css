@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.input {
-  @apply focus:outline-none focus:border-gray-500 p-3 border-2 text-lg border-gray-200 transition-colors;
+.avatar {
+  @apply rounded-full w-14 h-14 object-cover;
 }

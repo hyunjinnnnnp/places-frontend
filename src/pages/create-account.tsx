@@ -44,6 +44,7 @@ export const CreateAccount = () => {
   });
   const [preview, setPreview] = useState("");
   const [currentPassword, setcurrentPassword] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   watch(["file", "password"]);
   useEffect(() => {
     watch(({ file, password }) => {
@@ -67,33 +68,30 @@ export const CreateAccount = () => {
       }
     );
   const onSubmit = async () => {
+    const { nickname, email, password, file } = getValues();
     try {
-      if (!loading) {
-        const { nickname, email, password, file } = getValues();
-        let avatarUrl = "";
-        if (file.length > 0) {
-          const actualFile = file[0];
-          const formBody = new FormData();
-          formBody.append("file", actualFile);
-          const { url } = await (
-            await fetch("http://localhost:4000/uploads/", {
-              method: "POST",
-              body: formBody,
-            })
-          ).json();
-          avatarUrl = url;
-        }
-        createAccount({
-          variables: {
-            createAccountInput: {
-              nickname,
-              email,
-              password,
-              avatarUrl,
-            },
-          },
-        });
+      if (file.length > 0) {
+        const actualFile = file[0];
+        const formBody = new FormData();
+        formBody.append("file", actualFile);
+        const { url: avatarUrl } = await (
+          await fetch("http://localhost:4000/uploads/", {
+            method: "POST",
+            body: formBody,
+          })
+        ).json();
+        setAvatarUrl(avatarUrl);
       }
+      createAccount({
+        variables: {
+          createAccountInput: {
+            nickname,
+            email,
+            password,
+            avatarUrl,
+          },
+        },
+      });
     } catch (e) {
       //TO DO : error handling
     }
@@ -189,8 +187,8 @@ export const CreateAccount = () => {
           )}
         </form>
         <div>
-          Already have an ccount?
-          <LinkTo path={"/"} text={"Log in now"} />
+          Already have an account?
+          <LinkTo path={"/login"} text={"Log in now"} />
         </div>
       </div>
     </div>

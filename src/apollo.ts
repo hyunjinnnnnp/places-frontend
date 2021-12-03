@@ -32,7 +32,7 @@ export const client = new ApolloClient({
         fields: {
           isLoggedIn: {
             read() {
-              return isLoggedInVar();
+              return isLoggedInVar(); //쿼리 요청이 들어올 때마다 값을 받아온다
             },
           },
           token: {
