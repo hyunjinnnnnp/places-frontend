@@ -8,6 +8,8 @@ import {
   editProfileVariables,
 } from "../__generated__/editProfile";
 import { Button } from "../components/button";
+import { client } from "../apollo";
+import { useNavigate } from "react-router-dom";
 
 const EDIT_PROFILE_MUTATION = gql`
   mutation editProfile($input: EditProfileInput!) {
@@ -24,21 +26,48 @@ interface IFormProps {
   file?: File[];
   password?: string;
 }
+let avatarUrl: string;
 
 export const EditProfile = () => {
+  const [preview, setPreview] = useState("");
+  const navigate = useNavigate();
   const { data: userData } = useMe();
+
   const onCompleted = (data: editProfile) => {
     const {
-      editProfile: { ok },
+      editProfile: { ok, error },
     } = data;
-    if (ok) {
-      //update cache. verified =false;
-      console.log(ok);
+    if (ok && userData?.myProfile.user) {
+      //update cache. if email changed, verified false;
+      const {
+        myProfile: {
+          user: { id, email: prevEmail, avatarUrl: prevAvatarUrl },
+        },
+      } = userData;
+
+      const { email: newEmail, nickname } = getValues();
+      client.writeFragment({
+        id: `User:${id}`,
+        fragment: gql`
+          fragment edited on User {
+            verified
+            email
+            nickname
+            avatarUrl
+          }
+        `, //newAvatarUrl 이 있다면 newAvatarUrl
+        data: {
+          email: newEmail,
+          verified: newEmail === prevEmail,
+          nickname,
+          avatarUrl: avatarUrl !== "" ? avatarUrl : prevAvatarUrl,
+        },
+      });
     }
+    console.log(ok);
+    navigate("/my-profile");
   };
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [preview, setPreview] = useState("");
-  const [actualFile, setActualFile] = useState<Blob | string>("");
+
   const {
     register,
     handleSubmit,
@@ -53,22 +82,11 @@ export const EditProfile = () => {
     mode: "onChange",
   });
 
-  const fetchAPI = async (formBody: FormData) => {
-    const { url } = await (
-      await fetch("http://localhost:4000/uploads/", {
-        method: "POST",
-        body: formBody,
-      })
-    ).json();
-    setAvatarUrl(url);
-  };
-
   const file = watch("file");
   useEffect(() => {
     if (file && file.length > 0) {
       //file이 있다면 프리뷰 이미지
       const reader = new FileReader();
-      setActualFile(file[0]);
       reader.readAsDataURL(file[0]);
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -84,21 +102,39 @@ export const EditProfile = () => {
   const onSubmit = async () => {
     try {
       //fetch API then edit
-      const formBody = new FormData();
-      formBody.append("file", actualFile);
-      await fetchAPI(formBody);
-      const { nickname, email } = getValues();
-      editProfile({
-        variables: {
-          input: {
-            ...(nickname !== userData?.myProfile.user?.nickname && {
+      const { file, nickname, email } = getValues();
+      if (file && file.length > 0) {
+        const actualFile = file[0];
+        const formBody = new FormData();
+        formBody.append("file", actualFile);
+        const { url } = await (
+          await fetch("http://localhost:4000/uploads/", {
+            method: "POST",
+            body: formBody,
+          })
+        ).json();
+        // setAvatarUrl(url);
+        avatarUrl = await url;
+        editProfile({
+          variables: {
+            //data !== prevData는 백엔드에서 확인하고있음.
+            input: {
               nickname,
-            }),
-            ...(email !== userData?.myProfile.user?.email && { email }),
-            ...(avatarUrl && { avatarUrl }),
+              email,
+              avatarUrl: url && url,
+            },
           },
-        },
-      });
+        });
+      } else {
+        editProfile({
+          variables: {
+            input: {
+              nickname,
+              email,
+            },
+          },
+        });
+      }
     } catch (e) {
       console.log(e);
     }
@@ -116,7 +152,6 @@ export const EditProfile = () => {
           type="text"
           placeholder="nickname"
         />
-        {/* //TO DO: check if the nickname exists  */}
         <input
           className="input"
           {...register("email", {
