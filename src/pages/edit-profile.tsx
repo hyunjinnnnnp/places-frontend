@@ -35,7 +35,7 @@ export const EditProfile = () => {
 
   const onCompleted = (data: editProfile) => {
     const {
-      editProfile: { ok, error },
+      editProfile: { ok },
     } = data;
     if (ok && userData?.myProfile.user) {
       //update cache. if email changed, verified false;
@@ -64,7 +64,6 @@ export const EditProfile = () => {
         },
       });
     }
-    console.log(ok);
     navigate("/my-profile");
   };
 
