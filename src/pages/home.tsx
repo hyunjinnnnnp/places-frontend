@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Map, CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
+import {
+  Map,
+  CustomOverlayMap,
+  MapMarker,
+  MarkerClusterer,
+} from "react-kakao-maps-sdk";
 
 interface IMarkerProp {
   position: {
@@ -15,6 +20,8 @@ export const Home = () => {
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [info, setInfo] = useState<IMarkerProp | null>(null);
+  const [detail, setDetail] =
+    useState<kakao.maps.services.PlacesSearchResult>();
   const [markers, setMarkers] = useState<IMarkerProp[] | null>(null);
   const [map, setMap] = useState<kakao.maps.Map>();
 
@@ -42,6 +49,7 @@ export const Home = () => {
     const keyword = getValues("search");
     setKeyword(keyword);
   };
+
   useEffect(() => {
     if (!map) return;
     const ps = new kakao.maps.services.Places();
@@ -52,9 +60,19 @@ export const Home = () => {
           data: kakao.maps.services.PlacesSearchResult,
           status: kakao.maps.services.Status
         ) => {
+          if (status === kakao.maps.services.Status.ZERO_RESULT) {
+            alert("검색 결과가 존재하지 않습니다.");
+            return;
+          }
+          if (status === kakao.maps.services.Status.ERROR) {
+            alert("검색 결과 중 오류가 발생했습니다.");
+            return;
+          }
           if (status === kakao.maps.services.Status.OK) {
+            setMarkers(null);
             const bounds = new kakao.maps.LatLngBounds();
             let markers: any = [];
+            setDetail(data);
             data.map((item: kakao.maps.services.PlacesSearchResultItem) => {
               markers.push({
                 position: {
@@ -82,20 +100,28 @@ export const Home = () => {
       <Map
         onCreate={setMap}
         center={coords}
+        level={10}
         style={{ width: "100%", height: "360px" }}
       >
-        {markers &&
-          markers.map((marker) => (
-            <MapMarker
-              key={`marker-${marker.content}-${marker.position.lat},${marker.position.lng}`}
-              position={marker.position}
-              onClick={() => setInfo(marker)}
-            >
-              {info && info.content === marker.content && (
-                <div style={{ color: "#000" }}>{marker.content}</div>
-              )}
-            </MapMarker>
-          ))}
+        <MarkerClusterer averageCenter={true} minLevel={5}>
+          {markers &&
+            markers.map((marker) => (
+              <MapMarker
+                key={`marker-${marker.position.lat},${marker.position.lng}`}
+                position={marker.position}
+                onClick={() => setInfo(marker)} //click >>> 그냥 밑에 보여주는 거로 바꾸기
+              >
+                {info && info.content === marker.content && (
+                  <div
+                    key={`marker-${marker.content}-${marker.position.lat},${marker.position.lng}`}
+                    style={{ color: "#000" }}
+                  >
+                    {marker.content}
+                  </div>
+                )}
+              </MapMarker>
+            ))}
+        </MarkerClusterer>
         {!loading && <MapMarker position={coords} />}
         {errorMessage && (
           <CustomOverlayMap position={coords}>
@@ -105,6 +131,7 @@ export const Home = () => {
           </CustomOverlayMap>
         )}
       </Map>
+      <div>{markers && markers.map((marker) => <div>{}</div>)}</div>
     </>
   );
 };
