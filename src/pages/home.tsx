@@ -7,7 +7,7 @@ import {
   MarkerClusterer,
 } from "react-kakao-maps-sdk";
 
-interface IMarkerProp {
+interface IDataProp {
   position: {
     lat: number;
     lng: number;
@@ -15,14 +15,16 @@ interface IMarkerProp {
   content: string;
 }
 export const Home = () => {
+  const DEFAULT_MAP_LEVEL = 10;
   const [coords, setCoords] = useState({ lat: 33.55635, lng: 126.795841 });
   const [errorMessage, setErrorMessage] = useState<GeolocationPositionError>();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
-  const [info, setInfo] = useState<IMarkerProp | null>(null);
-  const [detail, setDetail] =
-    useState<kakao.maps.services.PlacesSearchResult>();
-  const [markers, setMarkers] = useState<IMarkerProp[] | null>(null);
+  const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
+  //   const [info, setInfo] = useState<IDataProp | null>(null);
+  //   const [detail, setDetail] =
+  useState<kakao.maps.services.PlacesSearchResult>();
+  const [data, setData] = useState<IDataProp[] | null>(null);
   const [map, setMap] = useState<kakao.maps.Map>();
 
   const onSuccess = ({
@@ -69,12 +71,12 @@ export const Home = () => {
             return;
           }
           if (status === kakao.maps.services.Status.OK) {
-            setMarkers(null);
+            setData(null);
             const bounds = new kakao.maps.LatLngBounds();
-            let markers: any = [];
-            setDetail(data);
+            let results: any = [];
+            // setDetail(data);
             data.map((item: kakao.maps.services.PlacesSearchResultItem) => {
-              markers.push({
+              results.push({
                 position: {
                   lat: +item.y,
                   lng: +item.x,
@@ -83,7 +85,7 @@ export const Home = () => {
               });
               return bounds.extend(new kakao.maps.LatLng(+item.y, +item.x));
             });
-            setMarkers(markers);
+            setData(results);
             map.setBounds(bounds);
           }
         }
@@ -100,26 +102,29 @@ export const Home = () => {
       <Map
         onCreate={setMap}
         center={coords}
-        level={10}
+        level={DEFAULT_MAP_LEVEL}
         style={{ width: "100%", height: "360px" }}
+        onZoomChanged={(map) => {
+          setMapLevel(map.getLevel());
+        }}
       >
         <MarkerClusterer averageCenter={true} minLevel={5}>
-          {markers &&
-            markers.map((marker) => (
-              <MapMarker
-                key={`marker-${marker.position.lat},${marker.position.lng}`}
-                position={marker.position}
-                onClick={() => setInfo(marker)} //click >>> 그냥 밑에 보여주는 거로 바꾸기
-              >
-                {info && info.content === marker.content && (
-                  <div
-                    key={`marker-${marker.content}-${marker.position.lat},${marker.position.lng}`}
-                    style={{ color: "#000" }}
+          {data &&
+            data.map((item) => (
+              <>
+                <MapMarker
+                  key={`marker-${item.position.lat},${item.position.lng}`}
+                  position={item.position}
+                />
+                {mapLevel < 5 && (
+                  <CustomOverlayMap
+                    className="bg-gray-50 mt-5 rounded-sm px-1"
+                    position={item.position}
                   >
-                    {marker.content}
-                  </div>
+                    {item.content}
+                  </CustomOverlayMap>
                 )}
-              </MapMarker>
+              </>
             ))}
         </MarkerClusterer>
         {!loading && <MapMarker position={coords} />}
@@ -131,7 +136,6 @@ export const Home = () => {
           </CustomOverlayMap>
         )}
       </Map>
-      <div>{markers && markers.map((marker) => <div>{}</div>)}</div>
     </>
   );
 };
