@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import food from "../images/category-food.svg";
 import {
   Map,
   CustomOverlayMap,
@@ -21,8 +22,6 @@ export const Home = () => {
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
-  //   const [info, setInfo] = useState<IDataProp | null>(null);
-  //   const [detail, setDetail] =
   useState<kakao.maps.services.PlacesSearchResult>();
   const [data, setData] = useState<IDataProp[] | null>(null);
   const [map, setMap] = useState<kakao.maps.Map>();
@@ -108,23 +107,37 @@ export const Home = () => {
           setMapLevel(map.getLevel());
         }}
       >
-        <MarkerClusterer averageCenter={true} minLevel={5}>
+        <MarkerClusterer averageCenter={true} minLevel={7}>
           {data &&
             data.map((item) => (
-              <>
+              <div key={`container-${item.position.lat},${item.position.lng}`}>
                 <MapMarker
                   key={`marker-${item.position.lat},${item.position.lng}`}
                   position={item.position}
+                  onClick={() => {
+                    setCoords({
+                      lat: item.position.lat,
+                      lng: item.position.lng,
+                    });
+                  }}
+                  image={{
+                    src: food,
+                    size: {
+                      width: 20,
+                      height: 20,
+                    },
+                  }}
                 />
-                {mapLevel < 5 && (
+                {mapLevel < 7 && (
                   <CustomOverlayMap
                     className="bg-gray-50 mt-5 rounded-sm px-1"
                     position={item.position}
+                    key={`content-${item.position.lat},${item.position.lng}`}
                   >
                     {item.content}
                   </CustomOverlayMap>
                 )}
-              </>
+              </div>
             ))}
         </MarkerClusterer>
         {!loading && <MapMarker position={coords} />}
