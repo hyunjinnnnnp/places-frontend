@@ -1,29 +1,27 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBookmark as fasBookmark } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as farBookmark } from "@fortawesome/free-regular-svg-icons";
+
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import food from "../images/category-food.svg";
 import {
   Map,
   CustomOverlayMap,
   MapMarker,
   MarkerClusterer,
+  useMap,
 } from "react-kakao-maps-sdk";
 
-interface IDataProp {
-  position: {
-    lat: number;
-    lng: number;
-  };
-  content: string;
-}
 export const Home = () => {
   const DEFAULT_MAP_LEVEL = 10;
   const [coords, setCoords] = useState({ lat: 33.55635, lng: 126.795841 });
+  useState<kakao.maps.services.PlacesSearchResultItem>();
   const [errorMessage, setErrorMessage] = useState<GeolocationPositionError>();
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
-  useState<kakao.maps.services.PlacesSearchResult>();
-  const [data, setData] = useState<IDataProp[] | null>(null);
+  const [searchResult, setSearchResult] =
+    useState<kakao.maps.services.PlacesSearchResult>();
   const [map, setMap] = useState<kakao.maps.Map>();
 
   const onSuccess = ({
@@ -70,21 +68,11 @@ export const Home = () => {
             return;
           }
           if (status === kakao.maps.services.Status.OK) {
-            setData(null);
             const bounds = new kakao.maps.LatLngBounds();
-            let results: any = [];
-            // setDetail(data);
+            setSearchResult(data);
             data.map((item: kakao.maps.services.PlacesSearchResultItem) => {
-              results.push({
-                position: {
-                  lat: +item.y,
-                  lng: +item.x,
-                },
-                content: item.place_name,
-              });
               return bounds.extend(new kakao.maps.LatLng(+item.y, +item.x));
             });
-            setData(results);
             map.setBounds(bounds);
           }
         }
@@ -92,6 +80,63 @@ export const Home = () => {
     }
   }, [keyword, map]);
 
+  const Overlay = ({ name, address, phone, url, categoryName }: any) => {
+    return (
+      <div className="flex flex-col bg-gray-900 p-2 text-gray-100">
+        <div className="flex justify-between">
+          <span className="text-lg font-semibold pb-2">{name}</span>
+          <FontAwesomeIcon icon={farBookmark} className="cursor-pointer" />
+        </div>
+        <span>{categoryName}</span>
+        <span>{address}</span>
+        <span>{phone}</span>
+        <a
+          className="text-right cursor-pointer mt-2"
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+        >
+          새 창에서 상세 보기
+        </a>
+      </div>
+    );
+  };
+
+  const EventMarkerContainer = ({
+    onClick,
+    isClicked,
+    position,
+    name,
+    address,
+    phone,
+    url,
+    categoryName,
+  }: any) => {
+    const map = useMap();
+    return (
+      <>
+        <MapMarker position={position} onClick={onClick} />
+        {isClicked && (
+          <CustomOverlayMap
+            position={position}
+            clickable={true}
+            zIndex={1000}
+            xAnchor={0.5}
+            yAnchor={1}
+          >
+            <Overlay
+              name={name}
+              categoryName={categoryName}
+              address={address}
+              phone={phone}
+              url={url}
+            />
+          </CustomOverlayMap>
+        )}
+      </>
+    );
+  };
+  const [selectedMarker, setSelectedMarker] = useState<number>();
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -108,33 +153,29 @@ export const Home = () => {
         }}
       >
         <MarkerClusterer averageCenter={true} minLevel={7}>
-          {data &&
-            data.map((item) => (
-              <div key={`container-${item.position.lat},${item.position.lng}`}>
-                <MapMarker
-                  key={`marker-${item.position.lat},${item.position.lng}`}
-                  position={item.position}
-                  onClick={() => {
-                    setCoords({
-                      lat: item.position.lat,
-                      lng: item.position.lng,
-                    });
-                  }}
-                  image={{
-                    src: food,
-                    size: {
-                      width: 20,
-                      height: 20,
-                    },
-                  }}
+          {searchResult &&
+            searchResult.map((item, index) => (
+              <div key={`container-${item.y},${item.x}`}>
+                {/* TO DO : component 분리 */}
+                <EventMarkerContainer
+                  index={index}
+                  key={`EventMarkerContainer-${item.y},${item.x}`}
+                  position={{ lat: +item.y, lng: +item.x }}
+                  name={item.place_name}
+                  address={item.address_name}
+                  phone={item.phone}
+                  url={item.place_url}
+                  categoryName={item.category_name}
+                  onClick={() => setSelectedMarker(index)}
+                  isClicked={selectedMarker === index}
                 />
                 {mapLevel < 7 && (
                   <CustomOverlayMap
                     className="bg-gray-50 mt-5 rounded-sm px-1"
-                    position={item.position}
-                    key={`content-${item.position.lat},${item.position.lng}`}
+                    position={{ lat: +item.y, lng: +item.x }}
+                    key={`content-${item.y},${item.x}`}
                   >
-                    {item.content}
+                    {item.place_name}
                   </CustomOverlayMap>
                 )}
               </div>
