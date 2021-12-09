@@ -1,6 +1,7 @@
-detail
+map
 
-before crateAccount, editProfile
-
-- check if the nickname exists
-- check if email exists
+- search [x]
+- clusterer [x]
+- marker click event - info [x]
+- saving my place []
+- delete it from my places []

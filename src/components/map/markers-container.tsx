@@ -1,5 +1,5 @@
 import React from "react";
-import { CustomOverlayMap, MapMarker, useMap } from "react-kakao-maps-sdk";
+import { CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
 import { PlaceInfoOverlay } from "./place-info-overlay";
 
 export const MarkersContainer = ({
@@ -13,7 +13,6 @@ export const MarkersContainer = ({
   categoryName,
   mapLevel,
 }: any) => {
-  const map = useMap();
   return (
     <>
       <MapMarker position={position} onClick={onClick} />
@@ -26,6 +25,7 @@ export const MarkersContainer = ({
           yAnchor={1.1}
         >
           <PlaceInfoOverlay
+            position={position}
             name={name}
             categoryName={categoryName}
             address={address}

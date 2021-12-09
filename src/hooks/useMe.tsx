@@ -1,8 +1,8 @@
 import { gql, useQuery } from "@apollo/client";
-import { myProfileMutation } from "../__generated__/myProfileMutation";
+import { MyProfileQuery } from "../__generated__/MyProfileQuery";
 
 const MY_PROFILE_QUERY = gql`
-  query myProfileMutation {
+  query MyProfileQuery {
     myProfile {
       user {
         id
@@ -19,5 +19,5 @@ const MY_PROFILE_QUERY = gql`
 `;
 
 export const useMe = () => {
-  return useQuery<myProfileMutation>(MY_PROFILE_QUERY);
+  return useQuery<MyProfileQuery>(MY_PROFILE_QUERY);
 };

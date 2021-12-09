@@ -4,10 +4,10 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: myProfileMutation
+// GraphQL query operation: MyProfileQuery
 // ====================================================
 
-export interface myProfileMutation_myProfile_user {
+export interface MyProfileQuery_myProfile_user {
   __typename: "User";
   id: number;
   email: string;
@@ -16,14 +16,14 @@ export interface myProfileMutation_myProfile_user {
   avatarUrl: string | null;
 }
 
-export interface myProfileMutation_myProfile {
+export interface MyProfileQuery_myProfile {
   __typename: "MyProfileOutput";
-  user: myProfileMutation_myProfile_user | null;
+  user: MyProfileQuery_myProfile_user | null;
   followingCount: number | null;
   followersCount: number | null;
   relationsCount: number | null;
 }
 
-export interface myProfileMutation {
-  myProfile: myProfileMutation_myProfile;
+export interface MyProfileQuery {
+  myProfile: MyProfileQuery_myProfile;
 }
