@@ -9,10 +9,16 @@ import { CreatePlaceUserRelationInput } from "./globalTypes";
 // GraphQL mutation operation: CreatePlaceUserRelationMutation
 // ====================================================
 
+export interface CreatePlaceUserRelationMutation_createPlaceUserRelation_relation {
+  __typename: "PlaceUserRelation";
+  kakaoPlaceId: number;
+}
+
 export interface CreatePlaceUserRelationMutation_createPlaceUserRelation {
   __typename: "CreatePlaceUserRelationOutput";
   ok: boolean;
   error: string | null;
+  relation: CreatePlaceUserRelationMutation_createPlaceUserRelation_relation | null;
 }
 
 export interface CreatePlaceUserRelationMutation {

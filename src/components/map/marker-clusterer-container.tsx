@@ -17,6 +17,7 @@ export const MarkerClustererContainer = ({ searchResult, mapLevel }: any) => {
                 index={index}
                 key={`MarkersContainer-${item.y},${item.x}`}
                 position={{ lat: +item.y, lng: +item.x }}
+                kakaoPlaceId={item.id}
                 name={item.place_name}
                 address={item.address_name}
                 phone={item.phone}

@@ -12,6 +12,7 @@ export const MarkersContainer = ({
   url,
   categoryName,
   mapLevel,
+  kakaoPlaceId,
 }: any) => {
   return (
     <>
@@ -31,6 +32,7 @@ export const MarkersContainer = ({
             address={address}
             phone={phone}
             url={url}
+            kakaoPlaceId={kakaoPlaceId}
           />
         </CustomOverlayMap>
       )}
