@@ -4,20 +4,21 @@ import { faBookmark as farBookmark } from "@fortawesome/free-regular-svg-icons";
 import React, { useEffect, useState } from "react";
 import { gql, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
-import { Button } from "../button";
 import {
-  GET_MY_PLACE_RELATIONS_QUERY,
+  GET_MY_PLACE_RELATIONS,
   useMyPlaceRelations,
 } from "../../hooks/useMyPlaceRelations";
 import { client } from "../../apollo";
-import { FormError } from "../form-error";
 import {
   CreatePlaceUserRelationMutation,
   CreatePlaceUserRelationMutationVariables,
 } from "../../__generated__/CreatePlaceUserRelationMutation";
-
-//TO DO : gql move to /page/map ?????
-//이건 컴포넌트가 아닌데 ...?!? page << map 분리 ?
+import { FormError } from "../../components/form-error";
+import { Button } from "../../components/button";
+import {
+  DeletePlaceUserRelation,
+  DeletePlaceUserRelationVariables,
+} from "../../__generated__/DeletePlaceUserRelation";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -33,7 +34,18 @@ const CREATE_PLACE_USER_RELATION = gql`
   }
 `;
 
-export const PlaceInfoOverlay = ({
+const DELETE_PLACE_USER_RELATION = gql`
+  mutation DeletePlaceUserRelation(
+    $DeletePlaceUserRelationInput: DeletePlaceUserRelationInput!
+  ) {
+    deletePlaceUserRelation(input: $DeletePlaceUserRelationInput) {
+      ok
+      error
+    }
+  }
+`;
+
+export const PlaceMarkerInfoWindow = ({
   position,
   name,
   address,
@@ -46,17 +58,17 @@ export const PlaceInfoOverlay = ({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const onCompleted = (data: CreatePlaceUserRelationMutation) => {
+  const onCreateCompleted = (data: CreatePlaceUserRelationMutation) => {
     //fetch data
     const {
       createPlaceUserRelation: { ok, relation },
     } = data;
     if (ok) {
       const getResult = client.readQuery({
-        query: GET_MY_PLACE_RELATIONS_QUERY,
+        query: GET_MY_PLACE_RELATIONS,
       });
       client.writeQuery({
-        query: GET_MY_PLACE_RELATIONS_QUERY,
+        query: GET_MY_PLACE_RELATIONS,
         data: {
           getMyPlaceRelations: {
             ok: true,
@@ -77,12 +89,12 @@ export const PlaceInfoOverlay = ({
   };
   const [
     createPlaceUserRelationMutation,
-    { data: createMyPlaceRelationsResult, loading },
+    { data: createMyPlaceRelationsResult, loading: creating },
   ] = useMutation<
     CreatePlaceUserRelationMutation,
     CreatePlaceUserRelationMutationVariables
   >(CREATE_PLACE_USER_RELATION, {
-    onCompleted,
+    onCompleted: onCreateCompleted,
   });
   const { register, handleSubmit, getValues } = useForm();
 
@@ -124,6 +136,29 @@ export const PlaceInfoOverlay = ({
       },
     });
   };
+  const onDeleteCompleted = (data: DeletePlaceUserRelation) => {
+    const {
+      deletePlaceUserRelation: { ok },
+    } = data;
+    if (ok) {
+      console.log("ok");
+      //write query
+    }
+  };
+
+  const [deletePlaceUserRelation] = useMutation<
+    DeletePlaceUserRelation,
+    DeletePlaceUserRelationVariables
+  >(DELETE_PLACE_USER_RELATION, { onCompleted: onDeleteCompleted });
+  const deleteMyPlaceRelation = (kakaoPlaceId: number) => {
+    deletePlaceUserRelation({
+      variables: {
+        DeletePlaceUserRelationInput: {
+          kakaoPlaceId,
+        },
+      },
+    });
+  };
   return (
     <div className="flex flex-col bg-gray-900 p-2 text-gray-100">
       {!isSelected && (
@@ -132,6 +167,7 @@ export const PlaceInfoOverlay = ({
             <span className="text-lg font-semibold pb-2">{name}</span>
             {isBookmarked ? (
               <FontAwesomeIcon
+                onClick={() => deleteMyPlaceRelation(+kakaoPlaceId)}
                 icon={fasBookmark}
                 className="cursor-pointer text-yellow-400"
               />
@@ -161,7 +197,11 @@ export const PlaceInfoOverlay = ({
           <span className="text-lg font-semibold pb-2">{name} 저장하기</span>
           <form onSubmit={handleSubmit(onSubmit)}>
             <input {...register("memo")} type="text" placeholder="memo" />
-            <Button canClick={!loading} loading={loading} actionText={"save"} />
+            <Button
+              canClick={!creating}
+              loading={creating}
+              actionText={"save"}
+            />
           </form>
           {createMyPlaceRelationsResult?.createPlaceUserRelation.error && (
             <FormError

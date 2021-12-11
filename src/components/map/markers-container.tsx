@@ -1,6 +1,9 @@
+import markerSolid from "../../images/map-marker-solid.svg";
+import pin from "../../images/66990_marker_icon.png";
 import React from "react";
 import { CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
-import { PlaceInfoOverlay } from "./place-info-overlay";
+import { PlaceMarkerInfoWindow } from "../../pages/map/place-marker-infowindow";
+import { useMyPlaceRelations } from "../../hooks/useMyPlaceRelations";
 
 export const MarkersContainer = ({
   onClick,
@@ -14,9 +17,29 @@ export const MarkersContainer = ({
   mapLevel,
   kakaoPlaceId,
 }: any) => {
+  const { data } = useMyPlaceRelations();
+  let img = markerSolid;
+  if (data && data.getMyPlaceRelations.relations) {
+    data.getMyPlaceRelations.relations.map((item) => {
+      if (item.kakaoPlaceId === kakaoPlaceId) {
+        const src = pin;
+        img = src;
+      }
+    });
+  }
   return (
     <>
-      <MapMarker position={position} onClick={onClick} />
+      <MapMarker
+        position={position}
+        onClick={onClick}
+        image={{
+          src: img, //if kakaoPlaceId
+          size: {
+            width: 50,
+            height: 50,
+          },
+        }}
+      />
       {isClicked && mapLevel < 7 && (
         <CustomOverlayMap
           position={position}
@@ -25,7 +48,7 @@ export const MarkersContainer = ({
           xAnchor={0.5}
           yAnchor={1.1}
         >
-          <PlaceInfoOverlay
+          <PlaceMarkerInfoWindow
             position={position}
             name={name}
             categoryName={categoryName}

@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { MarkerClusterer, useMap } from "react-kakao-maps-sdk";
 import { MARKER_CLUSTER_MIN } from "../../constants";
-import { MarkersContainer } from "./markers-container";
+import { MarkersContainer } from "../../components/map/markers-container";
 
-export const MarkerClustererContainer = ({ searchResult, mapLevel }: any) => {
+export const SearchResultClusterer = ({ result, mapLevel }: any) => {
   const map = useMap();
   const [selectedMarker, setSelectedMarker] = useState<number>();
 
   return (
     <MarkerClusterer averageCenter={true} minLevel={MARKER_CLUSTER_MIN}>
-      {searchResult &&
-        searchResult.map(
+      {result &&
+        result.map(
           (item: kakao.maps.services.PlacesSearchResultItem, index: number) => (
             <div key={`container-${item.y},${item.x}`}>
               <MarkersContainer

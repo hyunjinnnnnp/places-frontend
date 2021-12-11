@@ -15,7 +15,7 @@ export interface CreateAccountInput {
 }
 
 export interface CreatePlaceUserRelationInput {
-  kakaoPlaceId?: number | null;
+  kakaoPlaceId: number;
   name: string;
   address: string;
   lat: number;
@@ -24,6 +24,10 @@ export interface CreatePlaceUserRelationInput {
   url?: string | null;
   categoryName?: string | null;
   memo?: string | null;
+}
+
+export interface DeletePlaceUserRelationInput {
+  kakaoPlaceId: number;
 }
 
 export interface EditProfileInput {
