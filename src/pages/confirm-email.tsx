@@ -1,16 +1,16 @@
 import React, { useEffect } from "react";
 import { gql, useMutation } from "@apollo/client";
 import {
-  verifyEmail,
-  verifyEmailVariables,
-} from "../__generated__/verifyEmail";
+  VerifyEmail,
+  VerifyEmailVariables,
+} from "../__generated__/VerifyEmail";
 import { useQueryParams } from "../hooks/useQueryParams";
 import { client } from "../apollo";
 import { useMe } from "../hooks/useMe";
 import { useNavigate } from "react-router";
 
 const VERIFY_EMAIL_MUTATION = gql`
-  mutation verifyEmail($input: VerifyEmailInput!) {
+  mutation VerifyEmail($input: VerifyEmailInput!) {
     verifyEmail(input: $input) {
       ok
       error
@@ -20,7 +20,7 @@ const VERIFY_EMAIL_MUTATION = gql`
 export const ConfirmEmail = () => {
   const navigate = useNavigate();
   const { data: userData } = useMe();
-  const onCompleted = (data: verifyEmail) => {
+  const onCompleted = (data: VerifyEmail) => {
     const {
       verifyEmail: { ok },
     } = data;
@@ -39,7 +39,7 @@ export const ConfirmEmail = () => {
       navigate("/");
     }
   };
-  const [verifyEmail] = useMutation<verifyEmail, verifyEmailVariables>(
+  const [verifyEmail] = useMutation<VerifyEmail, VerifyEmailVariables>(
     VERIFY_EMAIL_MUTATION,
     {
       onCompleted,

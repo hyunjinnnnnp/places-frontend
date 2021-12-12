@@ -6,19 +6,19 @@
 import { CreateAccountInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: createAccountMutation
+// GraphQL mutation operation: CreateAccountMutation
 // ====================================================
 
-export interface createAccountMutation_createAccount {
+export interface CreateAccountMutation_createAccount {
   __typename: "CreateAccountOutput";
   ok: boolean;
   error: string | null;
 }
 
-export interface createAccountMutation {
-  createAccount: createAccountMutation_createAccount;
+export interface CreateAccountMutation {
+  createAccount: CreateAccountMutation_createAccount;
 }
 
-export interface createAccountMutationVariables {
+export interface CreateAccountMutationVariables {
   createAccountInput: CreateAccountInput;
 }

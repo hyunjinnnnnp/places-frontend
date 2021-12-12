@@ -6,19 +6,19 @@
 import { EditProfileInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: editProfile
+// GraphQL mutation operation: EditProfileMutation
 // ====================================================
 
-export interface editProfile_editProfile {
+export interface EditProfileMutation_editProfile {
   __typename: "EditProfileOutput";
   ok: boolean;
   error: string | null;
 }
 
-export interface editProfile {
-  editProfile: editProfile_editProfile;
+export interface EditProfileMutation {
+  editProfile: EditProfileMutation_editProfile;
 }
 
-export interface editProfileVariables {
+export interface EditProfileMutationVariables {
   input: EditProfileInput;
 }

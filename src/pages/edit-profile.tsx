@@ -3,16 +3,16 @@ import { gql, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { FormError } from "../components/form-error";
 import { useMe } from "../hooks/useMe";
-import {
-  editProfile,
-  editProfileVariables,
-} from "../__generated__/editProfile";
 import { Button } from "../components/button";
 import { client } from "../apollo";
 import { useNavigate } from "react-router-dom";
+import {
+  EditProfileMutation,
+  EditProfileMutationVariables,
+} from "../__generated__/EditProfileMutation";
 
 const EDIT_PROFILE_MUTATION = gql`
-  mutation editProfile($input: EditProfileInput!) {
+  mutation EditProfileMutation($input: EditProfileInput!) {
     editProfile(input: $input) {
       ok
       error
@@ -33,7 +33,7 @@ export const EditProfile = () => {
   const navigate = useNavigate();
   const { data: userData } = useMe();
 
-  const onCompleted = (data: editProfile) => {
+  const onCompleted = (data: EditProfileMutation) => {
     const {
       editProfile: { ok },
     } = data;
@@ -94,8 +94,8 @@ export const EditProfile = () => {
   }, [file]);
 
   const [editProfile, { loading }] = useMutation<
-    editProfile,
-    editProfileVariables
+    EditProfileMutation,
+    EditProfileMutationVariables
   >(EDIT_PROFILE_MUTATION, { onCompleted });
 
   const onSubmit = async () => {

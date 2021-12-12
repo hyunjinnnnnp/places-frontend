@@ -4,15 +4,15 @@ import { gql, useMutation } from "@apollo/client";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Button } from "../components/button";
 import { FormError } from "../components/form-error";
-import {
-  createAccountMutation,
-  createAccountMutationVariables,
-} from "../__generated__/createAccountMutation";
 import { useNavigate } from "react-router-dom";
 import { LinkTo } from "../components/link";
+import {
+  CreateAccountMutation,
+  CreateAccountMutationVariables,
+} from "../__generated__/CreateAccountMutation";
 
 const CREATE_ACCOUNT_MUTATION = gql`
-  mutation createAccountMutation($createAccountInput: CreateAccountInput!) {
+  mutation CreateAccountMutation($createAccountInput: CreateAccountInput!) {
     createAccount(input: $createAccountInput) {
       ok
       error
@@ -22,7 +22,7 @@ const CREATE_ACCOUNT_MUTATION = gql`
 
 export const CreateAccount = () => {
   const navigate = useNavigate();
-  const onCompleted = (data: createAccountMutation) => {
+  const onCompleted = (data: CreateAccountMutation) => {
     const {
       createAccount: { ok, error },
     } = data;
@@ -77,7 +77,7 @@ export const CreateAccount = () => {
   }, [watch]);
 
   const [createAccount, { data: createAccountMutationResult, loading }] =
-    useMutation<createAccountMutation, createAccountMutationVariables>(
+    useMutation<CreateAccountMutation, CreateAccountMutationVariables>(
       CREATE_ACCOUNT_MUTATION,
       {
         onCompleted,

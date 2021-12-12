@@ -6,19 +6,19 @@
 import { VerifyEmailInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: verifyEmail
+// GraphQL mutation operation: VerifyEmail
 // ====================================================
 
-export interface verifyEmail_verifyEmail {
+export interface VerifyEmail_verifyEmail {
   __typename: "VerifyEmailOutput";
   ok: boolean;
   error: string | null;
 }
 
-export interface verifyEmail {
-  verifyEmail: verifyEmail_verifyEmail;
+export interface VerifyEmail {
+  verifyEmail: VerifyEmail_verifyEmail;
 }
 
-export interface verifyEmailVariables {
+export interface VerifyEmailVariables {
   input: VerifyEmailInput;
 }
