@@ -18,7 +18,7 @@ export const MarkersContainer = ({
   kakaoPlaceId,
 }: any) => {
   const { data } = useMyPlaceRelations();
-  //if clicked ?? lazy
+
   let imgSrc = markerSolid;
   if (data && data.getMyPlaceRelations.relations) {
     data.getMyPlaceRelations.relations.map((item: any) => {
@@ -34,7 +34,7 @@ export const MarkersContainer = ({
         position={position}
         onClick={onClick}
         image={{
-          src: imgSrc, //if kakaoPlaceId
+          src: imgSrc,
           size: {
             width: 50,
             height: 50,

@@ -35,15 +35,17 @@ const GET_ALL_PLACES_QUERY = gql`
 `;
 
 export const Home = () => {
+  const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
   const [coords, setCoords] = useState(DEFAULT_MAP_COORDS);
   useState<kakao.maps.services.PlacesSearchResultItem>();
   const [errorMessage, setErrorMessage] = useState<GeolocationPositionError>();
   const [mapLoading, setMapLoading] = useState(true);
-
-  const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
+  const [map, setMap] = useState<kakao.maps.Map>();
+  const [showAllPlaces, setShowAllPlaces] = useState(true);
   const [searchPlacesResult, setSearchPlacesResult] =
     useState<kakao.maps.services.PlacesSearchResult>();
-  const [map, setMap] = useState<kakao.maps.Map>();
+  const [showSearchedPlaces, setShowSearchedPlaces] = useState(false);
+  const [showMyPlaceRelation, setShowMyPlaceRelation] = useState(false);
 
   const onGeoSuccess = ({
     coords: { latitude, longitude },
@@ -65,12 +67,21 @@ export const Home = () => {
   const { data: getAllPlacesResult } =
     useQuery<GetAllPlacesQuery>(GET_ALL_PLACES_QUERY);
 
-  const [showMyPlaceRelation, setShowMyPlaceRelation] = useState(false);
-  const [showPlaces, setShowPlaces] = useState(true);
   const [
     getMyPlaceRelations,
     { data: getMyPlaceRelationsResult, loading: getMyPlaceRelationsLoading },
   ] = useLazyQuery<GetMyPlaceRelations>(GET_MY_PLACE_RELATIONS);
+
+  useEffect(() => {
+    if (getAllPlacesResult) {
+      setShowAllPlaces(true);
+      setShowSearchedPlaces(false);
+    }
+    if (searchPlacesResult) {
+      setShowSearchedPlaces(true);
+      setShowAllPlaces(false);
+    }
+  }, [getAllPlacesResult, searchPlacesResult]);
 
   return (
     <>
@@ -80,10 +91,11 @@ export const Home = () => {
       />
       <button
         onClick={() => {
-          setShowPlaces(!showPlaces);
+          setShowAllPlaces(!showAllPlaces);
+          setShowSearchedPlaces(!showSearchedPlaces);
         }}
       >
-        {showPlaces ? (
+        {showAllPlaces ? (
           <FontAwesomeIcon icon={faEye} />
         ) : (
           <FontAwesomeIcon icon={faEyeSlash} />
@@ -115,19 +127,19 @@ export const Home = () => {
           setMapLevel(map.getLevel());
         }}
       >
-        {searchPlacesResult && (
-          <MarkerClustererContainer
-            searchPlacesResult={searchPlacesResult}
-            mapLevel={mapLevel}
-            showPlaces={showPlaces}
-          />
-        )}
         {/* 겹치는 게 있다면 제어해야함 마커 두개씩 생김 ㅠㅠ */}
         {getAllPlacesResult && (
           <MarkerClustererContainer
             getAllPlacesResult={getAllPlacesResult}
             mapLevel={mapLevel}
-            showPlaces={showPlaces}
+            showAllPlaces={showAllPlaces}
+          />
+        )}
+        {searchPlacesResult && (
+          <MarkerClustererContainer
+            searchPlacesResult={searchPlacesResult}
+            mapLevel={mapLevel}
+            showSearchedPlaces={showSearchedPlaces}
           />
         )}
         {/* MY LOCATION */}

@@ -11,18 +11,25 @@ interface IMarkerClustererContainerProps {
   getAllPlacesResult?: GetAllPlacesQuery;
   searchPlacesResult?: kakao.maps.services.PlacesSearchResult;
   mapLevel: Number;
-  showPlaces: boolean;
+  showAllPlaces?: boolean;
+  showSearchedPlaces?: boolean;
 }
 
 export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> =
-  ({ getAllPlacesResult, searchPlacesResult, mapLevel, showPlaces }) => {
+  ({
+    getAllPlacesResult,
+    searchPlacesResult,
+    mapLevel,
+    showAllPlaces,
+    showSearchedPlaces,
+  }) => {
     const map = useMap();
     const [selectedMarker, setSelectedMarker] = useState<number>();
 
     return (
       <MarkerClusterer averageCenter={true} minLevel={MARKER_CLUSTER_MIN}>
         {getAllPlacesResult?.getAllPlaces.places &&
-          showPlaces &&
+          showAllPlaces &&
           getAllPlacesResult.getAllPlaces.places.map(
             (place: GetAllPlacesQuery_getAllPlaces_places, index: number) => (
               <div key={`container-${place.lat},${place.lng}`}>
@@ -52,6 +59,7 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
             )
           )}
         {searchPlacesResult &&
+          showSearchedPlaces &&
           searchPlacesResult.map(
             (
               item: kakao.maps.services.PlacesSearchResultItem,
