@@ -4,10 +4,10 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: GetAllPlaces
+// GraphQL query operation: GetAllPlacesQuery
 // ====================================================
 
-export interface GetAllPlaces_getAllPlaces_places {
+export interface GetAllPlacesQuery_getAllPlaces_places {
   __typename: "Place";
   kakaoPlaceId: number;
   name: string;
@@ -18,11 +18,11 @@ export interface GetAllPlaces_getAllPlaces_places {
   url: string | null;
 }
 
-export interface GetAllPlaces_getAllPlaces {
+export interface GetAllPlacesQuery_getAllPlaces {
   __typename: "GetAllPlacesOutput";
-  places: GetAllPlaces_getAllPlaces_places[] | null;
+  places: GetAllPlacesQuery_getAllPlaces_places[] | null;
 }
 
-export interface GetAllPlaces {
-  getAllPlaces: GetAllPlaces_getAllPlaces;
+export interface GetAllPlacesQuery {
+  getAllPlaces: GetAllPlacesQuery_getAllPlaces;
 }

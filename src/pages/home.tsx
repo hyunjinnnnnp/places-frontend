@@ -6,20 +6,19 @@ import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { useLazyQuery } from "@apollo/client";
-import { useForm } from "react-hook-form";
-import { Map, CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
-import { SearchResultClusterer } from "./map/search-result-clusterer";
+import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import { DEFAULT_MAP_COORDS, DEFAULT_MAP_LEVEL } from "../constants";
 import {
   GetMyPlaceRelations,
   GetMyPlaceRelations_getMyPlaceRelations,
 } from "../__generated__/GetMyPlaceRelations";
-import { GetAllPlaces } from "../__generated__/GetAllPlaces";
-import { GetAllPlacesResultClusterer } from "./map/get-all-places-result-clusterer";
 import { GET_MY_PLACE_RELATIONS } from "../hooks/useMyPlaceRelations";
+import { GetAllPlacesQuery } from "../__generated__/GetAllPlacesQuery";
+import { MarkerClustererContainer } from "../components/map/marker-clusterer-container";
+import { SearchPlaces } from "./map/search-places";
 
-const GET_ALL_PLACES = gql`
-  query GetAllPlaces {
+const GET_ALL_PLACES_QUERY = gql`
+  query GetAllPlacesQuery {
     getAllPlaces {
       places {
         kakaoPlaceId
@@ -39,10 +38,10 @@ export const Home = () => {
   const [coords, setCoords] = useState(DEFAULT_MAP_COORDS);
   useState<kakao.maps.services.PlacesSearchResultItem>();
   const [errorMessage, setErrorMessage] = useState<GeolocationPositionError>();
-  const [loading, setLoading] = useState(true);
-  const [keyword, setKeyword] = useState("");
+  const [mapLoading, setMapLoading] = useState(true);
+
   const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
-  const [searchResult, setSearchResult] =
+  const [searchPlacesResult, setSearchPlacesResult] =
     useState<kakao.maps.services.PlacesSearchResult>();
   const [map, setMap] = useState<kakao.maps.Map>();
 
@@ -50,82 +49,35 @@ export const Home = () => {
     coords: { latitude, longitude },
   }: GeolocationPosition) => {
     setCoords({ lat: latitude, lng: longitude });
-    setLoading(false);
+    setMapLoading(false);
   };
   const onGeoError = (error: GeolocationPositionError) => {
     console.warn(`ERROR(${error.code}): ${error.message}`);
     alert("Sorry, no position available.");
     return setErrorMessage(error);
   };
-
   useEffect(() => {
     navigator.geolocation.watchPosition(onGeoSuccess, onGeoError, {
       enableHighAccuracy: true,
     });
   }, []);
 
-  const { register, handleSubmit, getValues } = useForm();
-
-  const onSubmit = () => {
-    const keyword = getValues("search");
-    setKeyword(keyword);
-  };
-
-  useEffect(() => {
-    if (!map) return;
-    const ps = new kakao.maps.services.Places();
-    if (keyword) {
-      ps.keywordSearch(
-        keyword,
-        (
-          data: kakao.maps.services.PlacesSearchResult,
-          status: kakao.maps.services.Status
-        ) => {
-          if (status === kakao.maps.services.Status.ZERO_RESULT) {
-            alert("검색 결과가 존재하지 않습니다.");
-            return;
-          }
-          if (status === kakao.maps.services.Status.ERROR) {
-            alert("검색 결과 중 오류가 발생했습니다.");
-            return;
-          }
-          if (status === kakao.maps.services.Status.OK) {
-            const bounds = new kakao.maps.LatLngBounds();
-            setSearchResult(data);
-            data.map((item: kakao.maps.services.PlacesSearchResultItem) => {
-              return bounds.extend(new kakao.maps.LatLng(+item.y, +item.x));
-            });
-            map.setBounds(bounds);
-          }
-        }
-      );
-    }
-  }, [keyword, map]);
+  const { data: getAllPlacesResult } =
+    useQuery<GetAllPlacesQuery>(GET_ALL_PLACES_QUERY);
 
   const [showMyPlaceRelation, setShowMyPlaceRelation] = useState(false);
   const [showPlaces, setShowPlaces] = useState(true);
-  const [myPlaceRelations, setMyPlaceRelations] =
-    useState<GetMyPlaceRelations_getMyPlaceRelations>();
-  //get all places
-  const { data: getAllPlacesResult } = useQuery<GetAllPlaces>(GET_ALL_PLACES);
-
-  //then if click the bookmark btn, show my relations with the icon
   const [
     getMyPlaceRelations,
     { data: getMyPlaceRelationsResult, loading: getMyPlaceRelationsLoading },
   ] = useLazyQuery<GetMyPlaceRelations>(GET_MY_PLACE_RELATIONS);
-  if (
-    getMyPlaceRelationsResult &&
-    getMyPlaceRelationsResult.getMyPlaceRelations
-  ) {
-    console.log(getMyPlaceRelationsResult.getMyPlaceRelations);
-  }
+
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("search")} placeholder="search" />
-        <button>submit</button>
-      </form>
+      <SearchPlaces
+        map={map && map}
+        setSearchPlacesResult={setSearchPlacesResult}
+      />
       <button
         onClick={() => {
           setShowPlaces(!showPlaces);
@@ -154,7 +106,6 @@ export const Home = () => {
           <FontAwesomeIcon icon={farBookmark} className="cursor-pointer" />
         )}
       </button>
-
       <Map
         onCreate={setMap}
         center={coords}
@@ -164,18 +115,23 @@ export const Home = () => {
           setMapLevel(map.getLevel());
         }}
       >
-        {searchResult && (
-          <SearchResultClusterer result={searchResult} mapLevel={mapLevel} />
-        )}
-        {getAllPlacesResult && (
-          <GetAllPlacesResultClusterer
-            showPlaces={showPlaces}
-            result={getAllPlacesResult}
+        {searchPlacesResult && (
+          <MarkerClustererContainer
+            searchPlacesResult={searchPlacesResult}
             mapLevel={mapLevel}
-            getMyPlaceRelationsResult={getMyPlaceRelationsResult}
+            showPlaces={showPlaces}
           />
         )}
-        {!loading && (
+        {/* 겹치는 게 있다면 제어해야함 마커 두개씩 생김 ㅠㅠ */}
+        {getAllPlacesResult && (
+          <MarkerClustererContainer
+            getAllPlacesResult={getAllPlacesResult}
+            mapLevel={mapLevel}
+            showPlaces={showPlaces}
+          />
+        )}
+        {/* MY LOCATION */}
+        {!mapLoading && (
           <CustomOverlayMap position={coords} xAnchor={0.5} yAnchor={0.7}>
             <div className="text-5xl">🧚🏻</div>
           </CustomOverlayMap>

@@ -1,5 +1,5 @@
 import markerSolid from "../../images/map-marker-solid.svg";
-import pin from "../../images/66990_marker_icon.png";
+import markerPin from "../../images/66990_marker_icon.png";
 import React from "react";
 import { CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
 import { PlaceMarkerInfoWindow } from "../../pages/map/place-marker-infowindow";
@@ -18,12 +18,13 @@ export const MarkersContainer = ({
   kakaoPlaceId,
 }: any) => {
   const { data } = useMyPlaceRelations();
-  let img = markerSolid;
+  //if clicked ?? lazy
+  let imgSrc = markerSolid;
   if (data && data.getMyPlaceRelations.relations) {
-    data.getMyPlaceRelations.relations.map((item) => {
+    data.getMyPlaceRelations.relations.map((item: any) => {
       if (item.kakaoPlaceId === kakaoPlaceId) {
-        const src = pin;
-        img = src;
+        const src = markerPin;
+        imgSrc = src;
       }
     });
   }
@@ -33,7 +34,7 @@ export const MarkersContainer = ({
         position={position}
         onClick={onClick}
         image={{
-          src: img, //if kakaoPlaceId
+          src: imgSrc, //if kakaoPlaceId
           size: {
             width: 50,
             height: 50,
