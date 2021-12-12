@@ -8,10 +8,7 @@ import { gql, useQuery } from "@apollo/client";
 import { useLazyQuery } from "@apollo/client";
 import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import { DEFAULT_MAP_COORDS, DEFAULT_MAP_LEVEL } from "../constants";
-import {
-  GetMyPlaceRelations,
-  GetMyPlaceRelations_getMyPlaceRelations,
-} from "../__generated__/GetMyPlaceRelations";
+import { GetMyPlaceRelations } from "../__generated__/GetMyPlaceRelations";
 import { GET_MY_PLACE_RELATIONS } from "../hooks/useMyPlaceRelations";
 import { GetAllPlacesQuery } from "../__generated__/GetAllPlacesQuery";
 import { MarkerClustererContainer } from "../components/map/marker-clusterer-container";
@@ -35,7 +32,7 @@ const GET_ALL_PLACES_QUERY = gql`
 `;
 
 export const Home = () => {
-  const [mapLevel, setMapLevel] = useState<Number>(DEFAULT_MAP_LEVEL);
+  const [mapLevel, setMapLevel] = useState<number>(DEFAULT_MAP_LEVEL);
   const [coords, setCoords] = useState(DEFAULT_MAP_COORDS);
   useState<kakao.maps.services.PlacesSearchResultItem>();
   const [errorMessage, setErrorMessage] = useState<GeolocationPositionError>();
@@ -67,10 +64,9 @@ export const Home = () => {
   const { data: getAllPlacesResult } =
     useQuery<GetAllPlacesQuery>(GET_ALL_PLACES_QUERY);
 
-  const [
-    getMyPlaceRelations,
-    { data: getMyPlaceRelationsResult, loading: getMyPlaceRelationsLoading },
-  ] = useLazyQuery<GetMyPlaceRelations>(GET_MY_PLACE_RELATIONS);
+  const [getMyPlaceRelations, { data: getMyPlaceRelationsResult }] =
+    useLazyQuery<GetMyPlaceRelations>(GET_MY_PLACE_RELATIONS);
+  //TO DO !! click button ?
 
   useEffect(() => {
     if (getAllPlacesResult) {
@@ -81,13 +77,17 @@ export const Home = () => {
       setShowSearchedPlaces(true);
       setShowAllPlaces(false);
     }
-  }, [getAllPlacesResult, searchPlacesResult]);
+    if (getMyPlaceRelationsResult) {
+      setShowMyPlaceRelation(true);
+    }
+  }, [getAllPlacesResult, searchPlacesResult, getMyPlaceRelationsResult]);
 
   return (
     <>
       <SearchPlaces
-        map={map && map}
+        map={map}
         setSearchPlacesResult={setSearchPlacesResult}
+        showSearchedPlaces={showSearchedPlaces}
       />
       <button
         onClick={() => {
@@ -115,7 +115,11 @@ export const Home = () => {
             className="cursor-pointer text-yellow-400"
           />
         ) : (
-          <FontAwesomeIcon icon={farBookmark} className="cursor-pointer" />
+          <FontAwesomeIcon
+            icon={farBookmark}
+            className="cursor-pointer"
+            onClick={() => getMyPlaceRelations}
+          />
         )}
       </button>
       <Map
@@ -127,12 +131,12 @@ export const Home = () => {
           setMapLevel(map.getLevel());
         }}
       >
-        {/* 겹치는 게 있다면 제어해야함 마커 두개씩 생김 ㅠㅠ */}
         {getAllPlacesResult && (
           <MarkerClustererContainer
             getAllPlacesResult={getAllPlacesResult}
             mapLevel={mapLevel}
             showAllPlaces={showAllPlaces}
+            showMyPlaceRelation={showMyPlaceRelation}
           />
         )}
         {searchPlacesResult && (
@@ -140,6 +144,7 @@ export const Home = () => {
             searchPlacesResult={searchPlacesResult}
             mapLevel={mapLevel}
             showSearchedPlaces={showSearchedPlaces}
+            showMyPlaceRelation={showMyPlaceRelation}
           />
         )}
         {/* MY LOCATION */}

@@ -6,19 +6,21 @@ interface ISearchPlacesProps {
   setSearchPlacesResult: React.Dispatch<
     React.SetStateAction<kakao.maps.services.PlacesSearchResult | undefined>
   >;
+  showSearchedPlaces: boolean;
 }
 
 export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
   map,
   setSearchPlacesResult,
+  showSearchedPlaces,
 }) => {
   const [keyword, setKeyword] = useState("");
-  const { register, handleSubmit, getValues } = useForm();
-
+  const { register, handleSubmit, getValues, resetField } = useForm();
   useEffect(() => {
     if (!map) return;
     const ps = new kakao.maps.services.Places();
     if (keyword) {
+      resetField("search");
       ps.keywordSearch(
         keyword,
         (
@@ -45,7 +47,7 @@ export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
         }
       );
     }
-  }, [keyword, map]);
+  }, [keyword, map, setSearchPlacesResult, resetField]);
 
   const onSubmit = () => {
     const keyword = getValues("search");
@@ -56,6 +58,7 @@ export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register("search")} placeholder="새로운 장소 검색하기" />
       <button>submit</button>
+      {showSearchedPlaces && <span>{`${keyword} 검색 결과`}</span>}
     </form>
   );
 };

@@ -4,8 +4,24 @@ import React from "react";
 import { CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
 import { PlaceMarkerInfoWindow } from "../../pages/map/place-marker-infowindow";
 import { useMyPlaceRelations } from "../../hooks/useMyPlaceRelations";
+import { GetMyPlaceRelations_getMyPlaceRelations_relations } from "../../__generated__/GetMyPlaceRelations";
 
-export const MarkersContainer = ({
+interface IMarkersContainerProps {
+  onClick: () => void;
+  index: number;
+  isClicked: boolean;
+  position: { lat: number; lng: number };
+  name: string;
+  address: string;
+  phone: string | null;
+  categoryName?: string;
+  url: string | null;
+  mapLevel: number;
+  kakaoPlaceId: number;
+  showMyPlaceRelation: boolean;
+}
+
+export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
   onClick,
   isClicked,
   position,
@@ -13,21 +29,26 @@ export const MarkersContainer = ({
   address,
   phone,
   url,
-  categoryName,
   mapLevel,
   kakaoPlaceId,
-}: any) => {
+  categoryName,
+  showMyPlaceRelation,
+}) => {
   const { data } = useMyPlaceRelations();
 
   let imgSrc = markerSolid;
-  if (data && data.getMyPlaceRelations.relations) {
-    data.getMyPlaceRelations.relations.map((item: any) => {
-      if (item.kakaoPlaceId === kakaoPlaceId) {
-        const src = markerPin;
-        imgSrc = src;
+  if (showMyPlaceRelation && data && data.getMyPlaceRelations.relations) {
+    data.getMyPlaceRelations.relations.map(
+      (item: GetMyPlaceRelations_getMyPlaceRelations_relations) => {
+        if (+item.kakaoPlaceId === kakaoPlaceId) {
+          const src = markerPin;
+          imgSrc = src;
+        }
+        return imgSrc;
       }
-    });
+    );
   }
+
   return (
     <>
       <MapMarker
@@ -64,7 +85,7 @@ export const MarkersContainer = ({
         <CustomOverlayMap
           className="bg-gray-50 mt-5 rounded-sm px-1"
           position={position}
-          key={`content-${position.y},${position.x}`}
+          key={`content-${position.lat},${position.lng}`}
         >
           {name}
         </CustomOverlayMap>

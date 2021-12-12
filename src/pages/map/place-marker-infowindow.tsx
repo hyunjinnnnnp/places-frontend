@@ -45,7 +45,17 @@ const DELETE_PLACE_USER_RELATION = gql`
   }
 `;
 
-export const PlaceMarkerInfoWindow = ({
+interface IPlaceMarkerInfoWindowProps {
+  position: { lat: number; lng: number };
+  name: string;
+  address: string;
+  phone: string | null;
+  url: string | null;
+  categoryName?: string;
+  kakaoPlaceId: number;
+}
+
+export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   position,
   name,
   address,
@@ -53,16 +63,17 @@ export const PlaceMarkerInfoWindow = ({
   url,
   categoryName,
   kakaoPlaceId,
-}: any) => {
+}) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-
+  const { lat, lng } = position;
   const onCreateCompleted = (data: CreatePlaceUserRelationMutation) => {
     //fetch data
     const {
       createPlaceUserRelation: { ok, relation },
     } = data;
+    const { memo } = getValues();
     if (ok) {
       const getResult = client.readQuery({
         query: GET_MY_PLACE_RELATIONS,
@@ -76,8 +87,20 @@ export const PlaceMarkerInfoWindow = ({
             relations: [
               ...getResult.getMyPlaceRelations.relations,
               {
+                place: {
+                  __typename: "Place",
+                  name,
+                  address,
+                  lat,
+                  lng,
+                  phone,
+                  url,
+                },
                 __typename: "PlaceUserRelation",
                 kakaoPlaceId: relation?.kakaoPlaceId,
+                memo,
+                isLiked: false,
+                isVisited: false,
               },
             ],
           },
@@ -118,7 +141,6 @@ export const PlaceMarkerInfoWindow = ({
   ]);
 
   const onSubmit = () => {
-    const { lat, lng } = position;
     const { memo } = getValues();
     createPlaceUserRelationMutation({
       variables: {
@@ -182,14 +204,16 @@ export const PlaceMarkerInfoWindow = ({
           <span>{categoryName}</span>
           <span>{address}</span>
           <span>{phone}</span>
-          <a
-            className="text-right cursor-pointer mt-2"
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            새 창에서 상세 보기
-          </a>
+          {url && (
+            <a
+              className="text-right cursor-pointer mt-2"
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              새 창에서 상세 보기
+            </a>
+          )}
         </>
       )}
       {isSelected && (

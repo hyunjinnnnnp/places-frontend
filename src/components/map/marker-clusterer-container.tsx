@@ -5,27 +5,31 @@ import {
   GetAllPlacesQuery,
   GetAllPlacesQuery_getAllPlaces_places,
 } from "../../__generated__/GetAllPlacesQuery";
+import { GetMyPlaceRelations } from "../../__generated__/GetMyPlaceRelations";
 import { MarkersContainer } from "./markers-container";
 
 interface IMarkerClustererContainerProps {
   getAllPlacesResult?: GetAllPlacesQuery;
   searchPlacesResult?: kakao.maps.services.PlacesSearchResult;
-  mapLevel: Number;
+  getMyPlaceRelationsResult?: GetMyPlaceRelations;
+  mapLevel: number;
   showAllPlaces?: boolean;
   showSearchedPlaces?: boolean;
+  showMyPlaceRelation: boolean;
 }
 
 export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> =
   ({
     getAllPlacesResult,
     searchPlacesResult,
+    getMyPlaceRelationsResult,
     mapLevel,
     showAllPlaces,
     showSearchedPlaces,
+    showMyPlaceRelation,
   }) => {
     const map = useMap();
     const [selectedMarker, setSelectedMarker] = useState<number>();
-
     return (
       <MarkerClusterer averageCenter={true} minLevel={MARKER_CLUSTER_MIN}>
         {getAllPlacesResult?.getAllPlaces.places &&
@@ -54,6 +58,7 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
                   }}
                   isClicked={selectedMarker === index}
                   mapLevel={mapLevel}
+                  showMyPlaceRelation={showMyPlaceRelation}
                 />
               </div>
             )
@@ -70,7 +75,7 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
                   index={index}
                   key={`MarkersContainer-${item.y},${item.x}`}
                   position={{ lat: +item.y, lng: +item.x }}
-                  kakaoPlaceId={item.id}
+                  kakaoPlaceId={+item.id}
                   name={item.place_name}
                   address={item.address_name}
                   phone={item.phone}
@@ -83,6 +88,7 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
                   }}
                   isClicked={selectedMarker === index}
                   mapLevel={mapLevel}
+                  showMyPlaceRelation={showMyPlaceRelation}
                 />
               </div>
             )

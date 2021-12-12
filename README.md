@@ -4,10 +4,10 @@ map
 - clusterer [x]
 - marker click event - info [x]
 - create place [x]
-- saving my place with memo []
-- edit my place - memo, isLiked, isVisited
+- saving my place with memo [x]
+- toggle my places / all places []
 - delete it from my places []
--
+- edit my place - memo, isLiked, isVisited
 
 my places
 
