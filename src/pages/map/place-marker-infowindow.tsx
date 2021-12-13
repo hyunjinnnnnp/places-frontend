@@ -1,6 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as fasBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as farBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import React, { useEffect, useState } from "react";
 import { gql, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
@@ -20,6 +22,10 @@ import {
   CreatePlaceUserRelationMutation,
   CreatePlaceUserRelationMutationVariables,
 } from "../../__generated__/CreatePlaceUserRelationMutation";
+import {
+  EditPlaceUserRelation,
+  EditPlaceUserRelationVariables,
+} from "../../__generated__/EditPlaceUserRelation";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -42,6 +48,17 @@ const DELETE_PLACE_USER_RELATION = gql`
     $DeletePlaceUserRelationInput: DeletePlaceUserRelationInput!
   ) {
     deletePlaceUserRelation(input: $DeletePlaceUserRelationInput) {
+      ok
+      error
+    }
+  }
+`;
+
+const EDIT_PLACE_USER_RELATION = gql`
+  mutation EditPlaceUserRelation(
+    $EditPlaceUserRelationInput: EditPlaceUserRelationInput!
+  ) {
+    editPlaceUserRelation(input: $EditPlaceUserRelationInput) {
       ok
       error
     }
@@ -71,6 +88,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isCreated, setIsCreated] = useState(false);
   const { lat, lng } = position;
 
@@ -133,7 +151,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
 
   const { data: myPlaceRelationsResult } = useMyPlaceRelations();
 
-  //myPlaceRelations에 저장된 장소라면 setIsBookmark(true)
+  //myPlaceRelations에 저장된 장소라면 setIsBookmark
   useEffect(() => {
     const isStoredPlace =
       myPlaceRelationsResult?.getMyPlaceRelations.relations?.find(
@@ -142,6 +160,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
         }
       );
     if (isStoredPlace) {
+      setIsLiked(isStoredPlace.isLiked);
       return setIsBookmarked(true);
     } else {
       return setIsBookmarked(false);
@@ -209,12 +228,48 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       },
     });
   };
+
+  const [editPlaceUserRelation, { data }] = useMutation<
+    EditPlaceUserRelation,
+    EditPlaceUserRelationVariables
+  >(EDIT_PLACE_USER_RELATION);
+
+  const editIsLiked = (isLiked: boolean, kakaoPlaceId: number) => {
+    editPlaceUserRelation({
+      variables: {
+        EditPlaceUserRelationInput: {
+          kakaoPlaceId,
+          isLiked: !isLiked,
+        },
+      },
+    });
+  };
+
   return (
     <div className="flex flex-col bg-gray-900 p-2 text-gray-100">
       {!isSelected && (
         <>
           <div className="flex justify-between">
             <span className="text-lg font-semibold pb-2">{name}</span>
+            <button
+              onClick={() => {
+                editIsLiked(isLiked, kakaoPlaceId);
+                setIsLiked(!isLiked);
+              }}
+            >
+              {isBookmarked && isLiked && (
+                <FontAwesomeIcon
+                  icon={fasHeart}
+                  className="cursor-pointer text-red-400"
+                />
+              )}
+              {isBookmarked && !isLiked && (
+                <FontAwesomeIcon
+                  icon={farHeart}
+                  className="cursor-pointer text-red-400"
+                />
+              )}
+            </button>
             {isBookmarked ? (
               <FontAwesomeIcon
                 onClick={() => {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { FormError } from "../../components/form-error";
 
 interface ISearchPlacesProps {
   map?: kakao.maps.Map | undefined;
@@ -15,7 +16,13 @@ export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
   showSearchedPlaces,
 }) => {
   const [keyword, setKeyword] = useState("");
-  const { register, handleSubmit, getValues, resetField } = useForm();
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    resetField,
+    formState: { errors },
+  } = useForm();
   useEffect(() => {
     if (!map) return;
     const ps = new kakao.maps.services.Places();
@@ -50,14 +57,24 @@ export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
   }, [keyword, map, setSearchPlacesResult, resetField]);
 
   const onSubmit = () => {
+    // if(!errors){
     const keyword = getValues("search");
     setKeyword(keyword);
+    // }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register("search")} placeholder="새로운 장소 검색하기" />
+      <input
+        {...register("search", {
+          required: "키워드를 입력해주세요",
+        })}
+        placeholder="새로운 장소 검색하기"
+      />
       <button>submit</button>
+      {errors.search?.message && (
+        <FormError errorMessage={errors.search.message} />
+      )}
       {showSearchedPlaces && <span>{`${keyword} 검색 결과`}</span>}
     </form>
   );
