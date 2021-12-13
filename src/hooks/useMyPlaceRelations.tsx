@@ -8,6 +8,7 @@ export const GET_MY_PLACE_RELATIONS = gql`
       error
       relations {
         place {
+          id
           name
           address
           lat
@@ -18,6 +19,7 @@ export const GET_MY_PLACE_RELATIONS = gql`
           #   categoryName
           # }
         }
+        id
         kakaoPlaceId
         memo
         isLiked

@@ -9,6 +9,7 @@
 
 export interface GetAllPlacesQuery_getAllPlaces_places {
   __typename: "Place";
+  id: number;
   kakaoPlaceId: number;
   name: string;
   address: string;

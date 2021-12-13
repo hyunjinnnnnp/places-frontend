@@ -9,6 +9,7 @@
 
 export interface GetMyPlaceRelations_getMyPlaceRelations_relations_place {
   __typename: "Place";
+  id: number;
   name: string;
   address: string;
   lat: number;
@@ -20,6 +21,7 @@ export interface GetMyPlaceRelations_getMyPlaceRelations_relations_place {
 export interface GetMyPlaceRelations_getMyPlaceRelations_relations {
   __typename: "PlaceUserRelation";
   place: GetMyPlaceRelations_getMyPlaceRelations_relations_place;
+  id: number;
   kakaoPlaceId: number;
   memo: string | null;
   isLiked: boolean;

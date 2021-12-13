@@ -11,6 +11,7 @@ interface IMarkersContainerProps {
   index: number;
   isClicked: boolean;
   position: { lat: number; lng: number };
+  placeId?: number;
   name: string;
   address: string;
   phone: string | null;
@@ -25,6 +26,7 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
   onClick,
   isClicked,
   position,
+  placeId,
   name,
   address,
   phone,
@@ -36,13 +38,13 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
 }) => {
   const { data } = useMyPlaceRelations();
 
+  //myPlaceRelations에 저장된 장소라면 마커를 변경한다
   let imgSrc = markerSolid;
-  if (showMyPlaceRelation && data && data.getMyPlaceRelations.relations) {
+  if (showMyPlaceRelation && data?.getMyPlaceRelations.relations) {
     data.getMyPlaceRelations.relations.map(
-      (item: GetMyPlaceRelations_getMyPlaceRelations_relations) => {
-        if (+item.kakaoPlaceId === kakaoPlaceId) {
-          const src = markerPin;
-          imgSrc = src;
+      (relation: GetMyPlaceRelations_getMyPlaceRelations_relations) => {
+        if (relation.kakaoPlaceId === kakaoPlaceId) {
+          imgSrc = markerPin;
         }
         return imgSrc;
       }
@@ -71,6 +73,7 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
           yAnchor={1.1}
         >
           <PlaceMarkerInfoWindow
+            placeId={placeId}
             position={position}
             name={name}
             categoryName={categoryName}

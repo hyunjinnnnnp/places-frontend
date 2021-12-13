@@ -8,16 +8,17 @@ import { gql, useQuery } from "@apollo/client";
 import { useLazyQuery } from "@apollo/client";
 import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import { DEFAULT_MAP_COORDS, DEFAULT_MAP_LEVEL } from "../constants";
-import { GetMyPlaceRelations } from "../__generated__/GetMyPlaceRelations";
 import { GET_MY_PLACE_RELATIONS } from "../hooks/useMyPlaceRelations";
 import { GetAllPlacesQuery } from "../__generated__/GetAllPlacesQuery";
 import { MarkerClustererContainer } from "../components/map/marker-clusterer-container";
 import { SearchPlaces } from "./map/search-places";
+import { GetMyPlaceRelations } from "../__generated__/GetMyPlaceRelations";
 
 const GET_ALL_PLACES_QUERY = gql`
   query GetAllPlacesQuery {
     getAllPlaces {
       places {
+        id
         kakaoPlaceId
         name
         address

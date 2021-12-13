@@ -11,6 +11,8 @@ import { CreatePlaceUserRelationInput } from "./globalTypes";
 
 export interface CreatePlaceUserRelationMutation_createPlaceUserRelation_relation {
   __typename: "PlaceUserRelation";
+  id: number;
+  placeId: number;
   kakaoPlaceId: number;
 }
 

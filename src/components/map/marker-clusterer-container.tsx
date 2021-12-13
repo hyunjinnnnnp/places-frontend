@@ -5,13 +5,11 @@ import {
   GetAllPlacesQuery,
   GetAllPlacesQuery_getAllPlaces_places,
 } from "../../__generated__/GetAllPlacesQuery";
-import { GetMyPlaceRelations } from "../../__generated__/GetMyPlaceRelations";
 import { MarkersContainer } from "./markers-container";
 
 interface IMarkerClustererContainerProps {
   getAllPlacesResult?: GetAllPlacesQuery;
   searchPlacesResult?: kakao.maps.services.PlacesSearchResult;
-  getMyPlaceRelationsResult?: GetMyPlaceRelations;
   mapLevel: number;
   showAllPlaces?: boolean;
   showSearchedPlaces?: boolean;
@@ -22,7 +20,6 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
   ({
     getAllPlacesResult,
     searchPlacesResult,
-    getMyPlaceRelationsResult,
     mapLevel,
     showAllPlaces,
     showSearchedPlaces,
@@ -39,6 +36,7 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
               <div key={`container-${place.lat},${place.lng}`}>
                 <MarkersContainer
                   index={index}
+                  placeId={place.id}
                   key={`MarkersContainer-${place.lat},${place.lng}`}
                   position={{ lat: place.lat, lng: place.lng }}
                   kakaoPlaceId={place.kakaoPlaceId}

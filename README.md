@@ -7,7 +7,7 @@ map
 - saving my place with memo [x]
 - toggle my places [x]
 
-- delete my place[x] fetch []
+- delete my place[x] fetch [x]
 - edit my place - memo, isLiked, isVisited
 - category saving logic
 - category -> image markers

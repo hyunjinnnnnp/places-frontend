@@ -9,16 +9,17 @@ import {
   useMyPlaceRelations,
 } from "../../hooks/useMyPlaceRelations";
 import { client } from "../../apollo";
-import {
-  CreatePlaceUserRelationMutation,
-  CreatePlaceUserRelationMutationVariables,
-} from "../../__generated__/CreatePlaceUserRelationMutation";
 import { FormError } from "../../components/form-error";
 import { Button } from "../../components/button";
 import {
   DeletePlaceUserRelation,
   DeletePlaceUserRelationVariables,
 } from "../../__generated__/DeletePlaceUserRelation";
+import { GetMyPlaceRelations_getMyPlaceRelations_relations } from "../../__generated__/GetMyPlaceRelations";
+import {
+  CreatePlaceUserRelationMutation,
+  CreatePlaceUserRelationMutationVariables,
+} from "../../__generated__/CreatePlaceUserRelationMutation";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -28,6 +29,8 @@ const CREATE_PLACE_USER_RELATION = gql`
       ok
       error
       relation {
+        id
+        placeId
         kakaoPlaceId
       }
     }
@@ -46,6 +49,7 @@ const DELETE_PLACE_USER_RELATION = gql`
 `;
 
 interface IPlaceMarkerInfoWindowProps {
+  placeId?: number;
   position: { lat: number; lng: number };
   name: string;
   address: string;
@@ -62,14 +66,16 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   phone,
   url,
   categoryName,
+  placeId,
   kakaoPlaceId,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
   const { lat, lng } = position;
+
+  //fetch data
   const onCreateCompleted = (data: CreatePlaceUserRelationMutation) => {
-    //fetch data
     const {
       createPlaceUserRelation: { ok, relation },
     } = data;
@@ -82,6 +88,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
         query: GET_MY_PLACE_RELATIONS,
         data: {
           getMyPlaceRelations: {
+            __typename: "GetMyPlaceRelationsOutput",
             ok: true,
             error: null,
             relations: [
@@ -89,6 +96,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
               {
                 place: {
                   __typename: "Place",
+                  id: relation?.placeId,
                   name,
                   address,
                   lat,
@@ -97,6 +105,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
                   url,
                 },
                 __typename: "PlaceUserRelation",
+                id: relation?.id,
                 kakaoPlaceId: relation?.kakaoPlaceId,
                 memo,
                 isLiked: false,
@@ -107,7 +116,8 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
         },
       });
       setIsSelected(false);
-      setIsCompleted(true);
+      setIsBookmarked(true);
+      setIsCreated(true);
     }
   };
   const [
@@ -122,14 +132,16 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   const { register, handleSubmit, getValues } = useForm();
 
   const { data: myPlaceRelationsResult } = useMyPlaceRelations();
+
+  //myPlaceRelations에 저장된 장소라면 setIsBookmark(true)
   useEffect(() => {
     const isStoredPlace =
-      myPlaceRelationsResult?.getMyPlaceRelations.relations?.filter(
+      myPlaceRelationsResult?.getMyPlaceRelations.relations?.find(
         (relation) => {
-          return relation.kakaoPlaceId === +kakaoPlaceId;
+          return relation.kakaoPlaceId === kakaoPlaceId;
         }
       );
-    if (isStoredPlace && isStoredPlace.length !== 0) {
+    if (isStoredPlace) {
       return setIsBookmarked(true);
     } else {
       return setIsBookmarked(false);
@@ -137,7 +149,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   }, [
     kakaoPlaceId,
     myPlaceRelationsResult?.getMyPlaceRelations.relations,
-    isCompleted,
+    isCreated,
   ]);
 
   const onSubmit = () => {
@@ -145,7 +157,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
     createPlaceUserRelationMutation({
       variables: {
         CreatePlaceUserRelationInput: {
-          kakaoPlaceId: +kakaoPlaceId,
+          kakaoPlaceId,
           name,
           address,
           phone,
@@ -163,8 +175,23 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       deletePlaceUserRelation: { ok },
     } = data;
     if (ok) {
-      console.log("ok");
-      //write query
+      const getResult = client.readQuery({ query: GET_MY_PLACE_RELATIONS });
+      const filteredRelations = getResult.getMyPlaceRelations.relations.filter(
+        (relation: GetMyPlaceRelations_getMyPlaceRelations_relations) =>
+          relation.place.id !== placeId
+      );
+      client.writeQuery({
+        query: GET_MY_PLACE_RELATIONS,
+        data: {
+          getMyPlaceRelations: {
+            __typename: "GetMyPlaceRelationsOutput",
+            ok: true,
+            error: null,
+            relations: filteredRelations,
+          },
+        },
+      });
+      setIsBookmarked(false);
     }
   };
 
@@ -172,7 +199,8 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
     DeletePlaceUserRelation,
     DeletePlaceUserRelationVariables
   >(DELETE_PLACE_USER_RELATION, { onCompleted: onDeleteCompleted });
-  const deleteMyPlaceRelation = (kakaoPlaceId: number) => {
+
+  const onDelete = (kakaoPlaceId: number) => {
     deletePlaceUserRelation({
       variables: {
         DeletePlaceUserRelationInput: {
@@ -189,7 +217,10 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
             <span className="text-lg font-semibold pb-2">{name}</span>
             {isBookmarked ? (
               <FontAwesomeIcon
-                onClick={() => deleteMyPlaceRelation(+kakaoPlaceId)}
+                onClick={() => {
+                  setIsBookmarked(!isBookmarked);
+                  onDelete(kakaoPlaceId);
+                }}
                 icon={fasBookmark}
                 className="cursor-pointer text-yellow-400"
               />
