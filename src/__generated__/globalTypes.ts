@@ -40,6 +40,11 @@ export interface EditIsVisitedInput {
   kakaoPlaceId: number;
 }
 
+export interface EditMemoInput {
+  memo?: string | null;
+  kakaoPlaceId: number;
+}
+
 export interface EditProfileInput {
   email?: string | null;
   nickname?: string | null;

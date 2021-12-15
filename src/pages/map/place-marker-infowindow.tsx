@@ -5,6 +5,7 @@ import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import { faCheckCircle as fasCheck } from "@fortawesome/free-solid-svg-icons";
 import { faCheckCircle as farCheck } from "@fortawesome/free-regular-svg-icons";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { gql, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ import {
   EditIsVisitedMutation,
   EditIsVisitedMutationVariables,
 } from "../../__generated__/EditIsVisitedMutation";
+import { EditMemo, EditMemoVariables } from "../../__generated__/EditMemo";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -80,6 +82,16 @@ const EDIT_IS_VISITED_MUTATION = gql`
   }
 `;
 
+const EDIT_MEMO_MUTATION = gql`
+  mutation EditMemo($editMemoInput: EditMemoInput!) {
+    editMemo(input: $editMemoInput) {
+      ok
+      error
+      relationId
+    }
+  }
+`;
+
 interface IPlaceMarkerInfoWindowProps {
   placeId?: number;
   position: { lat: number; lng: number };
@@ -105,6 +117,8 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isVisited, setIsVisited] = useState(false);
+  const [memo, setMemo] = useState<string | null>();
+  const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
   const { lat, lng } = position;
 
@@ -178,6 +192,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
     if (isStoredPlace) {
       setIsLiked(isStoredPlace.isLiked);
       setIsVisited(isStoredPlace.isVisited);
+      setMemo(isStoredPlace.memo);
       return setIsBookmarked(true);
     } else {
       return setIsBookmarked(false);
@@ -330,6 +345,44 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
     });
   };
 
+  const onEditMemoCompleted = (data: EditMemo) => {
+    const {
+      editMemo: { ok, relationId },
+    } = data;
+    const { editedMemo } = getValues();
+    client.writeFragment({
+      id: `PlaceUserRelation:${relationId}`,
+      fragment: gql`
+        fragment editedMemo on PlaceUserRelation {
+          memo
+        }
+      `,
+      data: {
+        memo: editedMemo,
+      },
+    });
+  };
+
+  const onEditMemo = () => {
+    const { editedMemo } = getValues();
+    editMemoMutation({
+      variables: {
+        editMemoInput: {
+          kakaoPlaceId,
+          memo: editedMemo,
+        },
+      },
+    });
+    setIsMemoEditing(false);
+  };
+
+  const [editMemoMutation] = useMutation<EditMemo, EditMemoVariables>(
+    EDIT_MEMO_MUTATION,
+    {
+      onCompleted: onEditMemoCompleted,
+    }
+  );
+
   return (
     <div className="flex flex-col bg-gray-900 p-2 text-gray-100">
       {!isSelected && (
@@ -394,6 +447,31 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
           <span>{categoryName}</span>
           <span>{address}</span>
           <span>{phone}</span>
+          <div>
+            {isBookmarked && memo && !isMemoEditing && (
+              <>
+                <span>{isBookmarked && memo && memo}</span>
+                <button onClick={() => setIsMemoEditing(true)}>
+                  {isBookmarked && memo && <FontAwesomeIcon icon={faEdit} />}
+                </button>
+              </>
+            )}
+            {isBookmarked && memo && isMemoEditing && (
+              <form onSubmit={handleSubmit(onEditMemo)}>
+                <input
+                  {...register("editedMemo")}
+                  type="text"
+                  placeholder="memo"
+                  defaultValue={memo}
+                />
+                <Button
+                  canClick={!creating}
+                  loading={creating}
+                  actionText={"edit"}
+                />
+              </form>
+            )}
+          </div>
           {url && (
             <a
               className="text-right cursor-pointer mt-2"
