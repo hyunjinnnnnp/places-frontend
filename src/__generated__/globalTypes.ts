@@ -30,10 +30,8 @@ export interface DeletePlaceUserRelationInput {
   kakaoPlaceId: number;
 }
 
-export interface EditPlaceUserRelationInput {
-  memo?: string | null;
-  isLiked?: boolean | null;
-  isVisited?: boolean | null;
+export interface EditIsLikedInput {
+  isLiked: boolean;
   kakaoPlaceId: number;
 }
 

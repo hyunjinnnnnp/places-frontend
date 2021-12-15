@@ -23,9 +23,9 @@ import {
   CreatePlaceUserRelationMutationVariables,
 } from "../../__generated__/CreatePlaceUserRelationMutation";
 import {
-  EditPlaceUserRelation,
-  EditPlaceUserRelationVariables,
-} from "../../__generated__/EditPlaceUserRelation";
+  EditIsLikedMutation,
+  EditIsLikedMutationVariables,
+} from "../../__generated__/EditIsLikedMutation";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -54,13 +54,12 @@ const DELETE_PLACE_USER_RELATION = gql`
   }
 `;
 
-const EDIT_PLACE_USER_RELATION = gql`
-  mutation EditPlaceUserRelation(
-    $EditPlaceUserRelationInput: EditPlaceUserRelationInput!
-  ) {
-    editPlaceUserRelation(input: $EditPlaceUserRelationInput) {
+const EDIT_IS_LIKED_MUTATION = gql`
+  mutation EditIsLikedMutation($editIsLikedInput: EditIsLikedInput!) {
+    editIsLiked(input: $editIsLikedInput) {
       ok
       error
+      relationId
     }
   }
 `;
@@ -151,7 +150,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
 
   const { data: myPlaceRelationsResult } = useMyPlaceRelations();
 
-  //myPlaceRelations에 저장된 장소라면 setIsBookmark
+  //myPlaceRelations에 저장된 장소라면 setIsBookmark, setIsLiked, setIsVisited
   useEffect(() => {
     const isStoredPlace =
       myPlaceRelationsResult?.getMyPlaceRelations.relations?.find(
@@ -228,16 +227,41 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       },
     });
   };
-
-  const [editPlaceUserRelation, { data }] = useMutation<
-    EditPlaceUserRelation,
-    EditPlaceUserRelationVariables
-  >(EDIT_PLACE_USER_RELATION);
+  const onEditCompleted = (data: EditIsLikedMutation) => {
+    const {
+      editIsLiked: { ok, relationId },
+    } = data;
+    if (ok) {
+      const result = client.readFragment({
+        id: `PlaceUserRelation:${relationId}`,
+        fragment: gql`
+          fragment editIsLiked on PlaceUserRelation {
+            isLiked
+          }
+        `,
+      });
+      client.writeFragment({
+        id: `PlaceUserRelation:${relationId}`,
+        fragment: gql`
+          fragment editIsLiked on PlaceUserRelation {
+            isLiked
+          }
+        `,
+        data: {
+          isLiked: !result.isLiked,
+        },
+      });
+    }
+  };
+  const [editPlaceUserRelation] = useMutation<
+    EditIsLikedMutation,
+    EditIsLikedMutationVariables
+  >(EDIT_IS_LIKED_MUTATION, { onCompleted: onEditCompleted });
 
   const editIsLiked = (isLiked: boolean, kakaoPlaceId: number) => {
     editPlaceUserRelation({
       variables: {
-        EditPlaceUserRelationInput: {
+        editIsLikedInput: {
           kakaoPlaceId,
           isLiked: !isLiked,
         },
