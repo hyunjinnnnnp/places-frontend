@@ -3,6 +3,8 @@ import { faBookmark as fasBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as farBookmark } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
+import { faCheckCircle as fasCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle as farCheck } from "@fortawesome/free-regular-svg-icons";
 import React, { useEffect, useState } from "react";
 import { gql, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
@@ -26,6 +28,10 @@ import {
   EditIsLikedMutation,
   EditIsLikedMutationVariables,
 } from "../../__generated__/EditIsLikedMutation";
+import {
+  EditIsVisitedMutation,
+  EditIsVisitedMutationVariables,
+} from "../../__generated__/EditIsVisitedMutation";
 
 const CREATE_PLACE_USER_RELATION = gql`
   mutation CreatePlaceUserRelationMutation(
@@ -64,6 +70,16 @@ const EDIT_IS_LIKED_MUTATION = gql`
   }
 `;
 
+const EDIT_IS_VISITED_MUTATION = gql`
+  mutation EditIsVisitedMutation($editIsVisitedInput: EditIsVisitedInput!) {
+    editIsVisited(input: $editIsVisitedInput) {
+      ok
+      error
+      relationId
+    }
+  }
+`;
+
 interface IPlaceMarkerInfoWindowProps {
   placeId?: number;
   position: { lat: number; lng: number };
@@ -88,6 +104,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
   const [isSelected, setIsSelected] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState<boolean>(false);
+  const [isVisited, setIsVisited] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
   const { lat, lng } = position;
 
@@ -160,6 +177,7 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       );
     if (isStoredPlace) {
       setIsLiked(isStoredPlace.isLiked);
+      setIsVisited(isStoredPlace.isVisited);
       return setIsBookmarked(true);
     } else {
       return setIsBookmarked(false);
@@ -227,12 +245,12 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       },
     });
   };
-  const onEditCompleted = (data: EditIsLikedMutation) => {
+  const onEditIsLikedCompleted = (data: EditIsLikedMutation) => {
     const {
       editIsLiked: { ok, relationId },
     } = data;
     if (ok) {
-      const result = client.readFragment({
+      const queryResult = client.readFragment({
         id: `PlaceUserRelation:${relationId}`,
         fragment: gql`
           fragment editIsLiked on PlaceUserRelation {
@@ -248,22 +266,65 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
           }
         `,
         data: {
-          isLiked: !result.isLiked,
+          isLiked: !queryResult.isLiked,
         },
       });
     }
   };
-  const [editPlaceUserRelation] = useMutation<
+  const [editIsLikedMutation] = useMutation<
     EditIsLikedMutation,
     EditIsLikedMutationVariables
-  >(EDIT_IS_LIKED_MUTATION, { onCompleted: onEditCompleted });
+  >(EDIT_IS_LIKED_MUTATION, { onCompleted: onEditIsLikedCompleted });
 
   const editIsLiked = (isLiked: boolean, kakaoPlaceId: number) => {
-    editPlaceUserRelation({
+    editIsLikedMutation({
       variables: {
         editIsLikedInput: {
           kakaoPlaceId,
           isLiked: !isLiked,
+        },
+      },
+    });
+  };
+
+  const onEditIsVisitedComplete = (data: EditIsVisitedMutation) => {
+    const {
+      editIsVisited: { ok, relationId },
+    } = data;
+    if (ok) {
+      const queryResult = client.readFragment({
+        id: `PlaceUserRelation:${relationId}`,
+        fragment: gql`
+          fragment editIsVisited on PlaceUserRelation {
+            isVisited
+          }
+        `,
+      });
+      client.writeFragment({
+        id: `PlaceUserRelation:${relationId}`,
+        fragment: gql`
+          fragment editIsVisited on PlaceUserRelation {
+            isVisited
+          }
+        `,
+        data: {
+          isVisited: !queryResult.isVisited,
+        },
+      });
+    }
+  };
+
+  const [editIsVisitedMutation] = useMutation<
+    EditIsVisitedMutation,
+    EditIsVisitedMutationVariables
+  >(EDIT_IS_VISITED_MUTATION, { onCompleted: onEditIsVisitedComplete });
+
+  const editIsVisited = (isVisited: boolean, kakaoPlaceId: number) => {
+    editIsVisitedMutation({
+      variables: {
+        editIsVisitedInput: {
+          kakaoPlaceId,
+          isVisited: !isVisited,
         },
       },
     });
@@ -291,6 +352,25 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
                 <FontAwesomeIcon
                   icon={farHeart}
                   className="cursor-pointer text-red-400"
+                />
+              )}
+            </button>
+            <button
+              onClick={() => {
+                editIsVisited(isVisited, kakaoPlaceId);
+                setIsVisited(!isVisited);
+              }}
+            >
+              {isBookmarked && isVisited && (
+                <FontAwesomeIcon
+                  icon={fasCheck}
+                  className="cursor-pointer text-blue-600"
+                />
+              )}
+              {isBookmarked && !isVisited && (
+                <FontAwesomeIcon
+                  icon={farCheck}
+                  className="cursor-pointer text-blue-600"
                 />
               )}
             </button>

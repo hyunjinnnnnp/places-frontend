@@ -35,6 +35,11 @@ export interface EditIsLikedInput {
   kakaoPlaceId: number;
 }
 
+export interface EditIsVisitedInput {
+  isVisited: boolean;
+  kakaoPlaceId: number;
+}
+
 export interface EditProfileInput {
   email?: string | null;
   nickname?: string | null;
