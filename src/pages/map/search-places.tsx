@@ -57,10 +57,8 @@ export const SearchPlaces: React.FC<ISearchPlacesProps> = ({
   }, [keyword, map, setSearchPlacesResult, resetField]);
 
   const onSubmit = () => {
-    // if(!errors){
     const keyword = getValues("search");
     setKeyword(keyword);
-    // }
   };
 
   return (

@@ -7,6 +7,13 @@
 // GraphQL query operation: GetAllPlacesQuery
 // ====================================================
 
+export interface GetAllPlacesQuery_getAllPlaces_places_category {
+  __typename: "Category";
+  name: string;
+  slug: string;
+  coverImg: string | null;
+}
+
 export interface GetAllPlacesQuery_getAllPlaces_places {
   __typename: "Place";
   id: number;
@@ -17,6 +24,7 @@ export interface GetAllPlacesQuery_getAllPlaces_places {
   lng: number;
   phone: string | null;
   url: string | null;
+  category: GetAllPlacesQuery_getAllPlaces_places_category | null;
 }
 
 export interface GetAllPlacesQuery_getAllPlaces {

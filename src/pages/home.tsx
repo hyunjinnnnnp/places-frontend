@@ -26,7 +26,11 @@ const GET_ALL_PLACES_QUERY = gql`
         lng
         phone
         url
-        # category
+        category {
+          name
+          slug
+          coverImg
+        }
       }
     }
   }
