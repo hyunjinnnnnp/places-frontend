@@ -113,12 +113,12 @@ export const Home = () => {
         {showMyPlaceRelation ? (
           <FontAwesomeIcon
             icon={fasBookmark}
-            className="cursor-pointer text-yellow-400"
+            className="cursor-pointer text-green-400"
           />
         ) : (
           <FontAwesomeIcon
             icon={farBookmark}
-            className="cursor-pointer"
+            className="cursor-pointer text-green-400"
             onClick={() => getMyPlaceRelations}
           />
         )}

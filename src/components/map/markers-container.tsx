@@ -1,10 +1,10 @@
-import markerSolid from "../../images/map-marker-solid.svg";
-import markerPin from "../../images/66990_marker_icon.png";
 import React from "react";
-import { CustomOverlayMap, MapMarker } from "react-kakao-maps-sdk";
+import { faBookmark as fasBookmark } from "@fortawesome/free-solid-svg-icons";
+import { CustomOverlayMap } from "react-kakao-maps-sdk";
 import { PlaceMarkerInfoWindow } from "../../pages/map/place-marker-infowindow";
 import { useMyPlaceRelations } from "../../hooks/useMyPlaceRelations";
 import { GetMyPlaceRelations_getMyPlaceRelations_relations } from "../../__generated__/GetMyPlaceRelations";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IMarkersContainerProps {
   onClick: () => void;
@@ -39,31 +39,40 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
   const { data } = useMyPlaceRelations();
 
   //myPlaceRelations에 저장된 장소라면 마커를 변경한다
-  let imgSrc = markerSolid;
+  let markerEmoji = <span>🍎</span>;
   if (showMyPlaceRelation && data?.getMyPlaceRelations.relations) {
     data.getMyPlaceRelations.relations.map(
       (relation: GetMyPlaceRelations_getMyPlaceRelations_relations) => {
         if (relation.kakaoPlaceId === kakaoPlaceId) {
-          imgSrc = markerPin;
+          markerEmoji = (
+            <FontAwesomeIcon
+              icon={fasBookmark}
+              className="cursor-pointer text-green-400"
+            />
+          );
         }
-        return imgSrc;
+        return markerEmoji;
       }
     );
   }
 
   return (
     <>
-      <MapMarker
+      {/* Marker with emoji */}
+      <CustomOverlayMap
         position={position}
-        onClick={onClick}
-        image={{
-          src: imgSrc,
-          size: {
-            width: 50,
-            height: 50,
-          },
-        }}
-      />
+        clickable={true}
+        xAnchor={0.5}
+        yAnchor={1.1}
+      >
+        <div
+          className="bg-yellow-400 w-10 h-10 rounded-full flex justify-center items-center"
+          onClick={onClick}
+        >
+          {markerEmoji}
+        </div>
+      </CustomOverlayMap>
+      {/* infowindow triggered by click event */}
       {isClicked && mapLevel < 7 && (
         <CustomOverlayMap
           position={position}
@@ -84,6 +93,7 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
           />
         </CustomOverlayMap>
       )}
+      {/* marker name */}
       {mapLevel < 7 && (
         <CustomOverlayMap
           className="bg-gray-50 mt-5 rounded-sm px-1"

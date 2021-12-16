@@ -8,10 +8,11 @@ map
 - toggle my places [x]
 
 - delete my place[x] fetch [x]
-- edit my place - memo, isLiked, isVisited
+- edit my place - memo, isLiked, isVisited [x]
 - category saving logic
 - category -> image markers
   my places
 
 - search by category
 - search by name
+- search by memo

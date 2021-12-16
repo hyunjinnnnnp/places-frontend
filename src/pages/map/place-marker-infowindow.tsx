@@ -350,17 +350,19 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
       editMemo: { ok, relationId },
     } = data;
     const { editedMemo } = getValues();
-    client.writeFragment({
-      id: `PlaceUserRelation:${relationId}`,
-      fragment: gql`
-        fragment editedMemo on PlaceUserRelation {
-          memo
-        }
-      `,
-      data: {
-        memo: editedMemo,
-      },
-    });
+    if (ok) {
+      client.writeFragment({
+        id: `PlaceUserRelation:${relationId}`,
+        fragment: gql`
+          fragment editedMemo on PlaceUserRelation {
+            memo
+          }
+        `,
+        data: {
+          memo: editedMemo,
+        },
+      });
+    }
   };
 
   const onEditMemo = () => {
@@ -434,13 +436,13 @@ export const PlaceMarkerInfoWindow: React.FC<IPlaceMarkerInfoWindowProps> = ({
                   onDelete(kakaoPlaceId);
                 }}
                 icon={fasBookmark}
-                className="cursor-pointer text-yellow-400"
+                className="cursor-pointer text-green-400"
               />
             ) : (
               <FontAwesomeIcon
                 onClick={() => setIsSelected(true)}
                 icon={farBookmark}
-                className="cursor-pointer"
+                className="cursor-pointer text-green-400"
               />
             )}
           </div>
