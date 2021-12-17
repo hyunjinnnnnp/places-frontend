@@ -22,7 +22,6 @@ interface IMarkersContainerProps {
   kakaoPlaceId: number;
   showMyPlaceRelation: boolean;
   mapLevel: number;
-  overlays: kakao.maps.CustomOverlay[];
 }
 
 export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
@@ -39,7 +38,6 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
   categoryImg,
   showMyPlaceRelation,
   mapLevel,
-  overlays,
 }) => {
   const { data } = useMyPlaceRelations();
 
@@ -69,26 +67,16 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
   return (
     <>
       {/* Marker with emoji */}
-      {
-        <CustomOverlayMap
-          position={position}
-          clickable={true}
-          xAnchor={0.5}
-          yAnchor={0.9}
-          onCreate={(customOverlay: kakao.maps.CustomOverlay) => {
-            overlays.push(customOverlay);
-          }}
-        >
-          {mapLevel < MARKER_CLUSTER_MIN && (
-            <div
-              className="bg-yellow-400 w-10 h-10 rounded-full flex justify-center items-center"
-              onClick={onClick}
-            >
-              {markerEmoji}
-            </div>
-          )}
-        </CustomOverlayMap>
-      }
+      <CustomOverlayMap position={position} xAnchor={0.5} yAnchor={1}>
+        {mapLevel < MARKER_CLUSTER_MIN && (
+          <div
+            className="bg-yellow-400 w-10 h-10 rounded-full flex justify-center items-center"
+            onClick={onClick}
+          >
+            {markerEmoji}
+          </div>
+        )}
+      </CustomOverlayMap>
       {/* infowindow triggered by click event */}
       {isClicked && mapLevel < MARKER_CLUSTER_MIN && (
         <CustomOverlayMap
@@ -113,9 +101,11 @@ export const MarkersContainer: React.FC<IMarkersContainerProps> = ({
       {/* place name */}
       {mapLevel < MARKER_CLUSTER_MIN && (
         <CustomOverlayMap
-          className="bg-gray-50 mt-5 rounded-sm px-1"
+          className="bg-gray-100 rounded-sm text-xs font-bold text-center"
           position={position}
           key={`content-${position.lat},${position.lng}`}
+          xAnchor={0.5}
+          yAnchor={-0.2}
         >
           {name}
         </CustomOverlayMap>

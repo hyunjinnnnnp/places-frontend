@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { MarkerClusterer, useMap } from "react-kakao-maps-sdk";
+import React, { useState } from "react";
+import { MapMarker, MarkerClusterer, useMap } from "react-kakao-maps-sdk";
 import { MARKER_CLUSTER_MIN } from "../../constants";
 import {
   GetAllPlacesQuery,
@@ -26,55 +26,54 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
     showMyPlaceRelation,
   }) => {
     const map = useMap();
-    let overlays: any[] = useMemo(() => [], []);
     const [selectedMarker, setSelectedMarker] = useState<number>();
-    const [clusterer, setclusterer] = useState<kakao.maps.MarkerClusterer>();
-
-    useEffect(() => {
-      if (clusterer && overlays) {
-        clusterer.addMarkers(overlays);
-      }
-    }, [clusterer, overlays, getAllPlacesResult]);
 
     return (
-      <MarkerClusterer
-        averageCenter={true}
-        minLevel={MARKER_CLUSTER_MIN}
-        onCreate={(clusterer: kakao.maps.MarkerClusterer) => {
-          setclusterer(clusterer);
-        }}
-      >
+      <MarkerClusterer averageCenter={true} minLevel={MARKER_CLUSTER_MIN}>
         {getAllPlacesResult?.getAllPlaces.places &&
           showAllPlaces &&
           getAllPlacesResult.getAllPlaces.places.map(
             (place: GetAllPlacesQuery_getAllPlaces_places, index: number) => (
               <div key={`container-${place.lat},${place.lng}`}>
                 {
-                  <MarkersContainer
-                    mapLevel={mapLevel}
-                    index={index}
-                    placeId={place.id}
-                    key={`MarkersContainer-${place.lat},${place.lng}`}
-                    position={{ lat: place.lat, lng: place.lng }}
-                    kakaoPlaceId={place.kakaoPlaceId}
-                    name={place.name}
-                    address={place.address}
-                    phone={place.phone}
-                    url={place.url}
-                    categoryName={place.category?.name}
-                    categoryImg={place.category?.coverImg}
-                    overlays={overlays}
-                    onClick={() => {
-                      const moveLatLng = new kakao.maps.LatLng(
-                        place.lat,
-                        place.lng
-                      );
-                      map?.panTo(moveLatLng);
-                      setSelectedMarker(index);
-                    }}
-                    isClicked={selectedMarker === index}
-                    showMyPlaceRelation={showMyPlaceRelation}
-                  />
+                  <>
+                    {/* 클러스터러 용 임시 마커 : visible(false)도 안되고 CustomOverlayMap 넣으면 클러스터가 안뜸.... */}
+                    <MapMarker
+                      key={`${place.lat},${place.lng}`}
+                      position={{ lat: place.lat, lng: place.lng }}
+                      image={{
+                        src: "",
+                        size: {
+                          width: 0,
+                          height: 0,
+                        },
+                      }}
+                    />
+                    <MarkersContainer
+                      mapLevel={mapLevel}
+                      index={index}
+                      placeId={place.id}
+                      key={`MarkersContainer-${place.lat},${place.lng}`}
+                      position={{ lat: place.lat, lng: place.lng }}
+                      kakaoPlaceId={place.kakaoPlaceId}
+                      name={place.name}
+                      address={place.address}
+                      phone={place.phone}
+                      url={place.url}
+                      categoryName={place.category?.name}
+                      categoryImg={place.category?.coverImg}
+                      onClick={() => {
+                        const moveLatLng = new kakao.maps.LatLng(
+                          place.lat,
+                          place.lng
+                        );
+                        map?.panTo(moveLatLng);
+                        setSelectedMarker(index);
+                      }}
+                      isClicked={selectedMarker === index}
+                      showMyPlaceRelation={showMyPlaceRelation}
+                    />
+                  </>
                 }
               </div>
             )
@@ -88,29 +87,42 @@ export const MarkerClustererContainer: React.FC<IMarkerClustererContainerProps> 
             ) => (
               <div key={`container-${item.y},${item.x}`}>
                 {
-                  <MarkersContainer
-                    mapLevel={mapLevel}
-                    index={index}
-                    key={`MarkersContainer-${item.y},${item.x}`}
-                    position={{ lat: +item.y, lng: +item.x }}
-                    kakaoPlaceId={+item.id}
-                    name={item.place_name}
-                    address={item.address_name}
-                    phone={item.phone}
-                    url={item.place_url}
-                    categoryName={item.category_name}
-                    overlays={overlays}
-                    onClick={() => {
-                      const moveLatLng = new kakao.maps.LatLng(
-                        +item.y,
-                        +item.x
-                      );
-                      map?.panTo(moveLatLng);
-                      setSelectedMarker(index);
-                    }}
-                    isClicked={selectedMarker === index}
-                    showMyPlaceRelation={showMyPlaceRelation}
-                  />
+                  <>
+                    {/* 클러스터러 용 임시 마커 : visible(false)도 안되고 CustomOverlayMap 넣으면 클러스터가 안뜸.... */}
+                    <MapMarker
+                      key={`${item.y},${item.x}`}
+                      position={{ lat: +item.y, lng: +item.x }}
+                      image={{
+                        src: "",
+                        size: {
+                          width: 0,
+                          height: 0,
+                        },
+                      }}
+                    />
+                    <MarkersContainer
+                      mapLevel={mapLevel}
+                      index={index}
+                      key={`MarkersContainer-${item.y},${item.x}`}
+                      position={{ lat: +item.y, lng: +item.x }}
+                      kakaoPlaceId={+item.id}
+                      name={item.place_name}
+                      address={item.address_name}
+                      phone={item.phone}
+                      url={item.place_url}
+                      categoryName={item.category_name}
+                      onClick={() => {
+                        const moveLatLng = new kakao.maps.LatLng(
+                          +item.y,
+                          +item.x
+                        );
+                        map?.panTo(moveLatLng);
+                        setSelectedMarker(index);
+                      }}
+                      isClicked={selectedMarker === index}
+                      showMyPlaceRelation={showMyPlaceRelation}
+                    />
+                  </>
                 }
               </div>
             )
